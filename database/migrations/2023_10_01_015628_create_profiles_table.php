@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('last_name')->nullable();
             $table->string('identification')->nullable();
             $table->date('birth_date')->nullable();
-            $table->string('profile_picture')->nullable();
+            $table->string('profile_picture', 2048)->nullable();
             $table->unsignedBigInteger('user_id');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->timestamps();

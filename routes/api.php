@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\SuperAdminController;
+use App\Http\Controllers\UserController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -22,6 +23,8 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::middleware('auth:sanctum', 'status')->group(function () {
     Route::get('/profile', [AuthController::class, 'userProfile']);
     Route::get('/logout', [AuthController::class, 'logout']);
+
+    Route::post('/user/upload/profile', [UserController::class, 'uploadProfilePhoto']);
 });
 
 Route::middleware('auth:sanctum', 'role:superadmin', 'status' )->group(function () {

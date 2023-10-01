@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 
 use App\Models\User;
 use App\Models\Role;
+use App\Models\Profile;
 use App\Http\Requests\Register; 
 use App\Http\Resources\UserResource; 
 use Illuminate\Support\Facades\Auth;
@@ -34,7 +35,7 @@ class AuthController extends Controller
         $user->roles()->attach($clienteRole->id);
     }
     // Creamos el perfil del usuario 
-    /*-- En proceso--*/
+    Profile::create(['user_id'=>$user->id]);
 
     $token = $user->createToken('token')->plainTextToken;
 
