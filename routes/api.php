@@ -22,8 +22,9 @@ Route::post('/login', [AuthController::class, 'login']);
 
 Route::middleware('auth:sanctum', 'status')->group(function () {
     Route::get('/profile', [AuthController::class, 'userProfile']);
-    Route::get('/logout', [AuthController::class, 'logout']);
+    Route::post('/logout', [AuthController::class, 'logout']);
 
+    Route::put('/user/profile/updated', [UserController::class, 'updateProfile']);
     Route::post('/user/upload/profile', [UserController::class, 'uploadProfilePhoto']);
 });
 
