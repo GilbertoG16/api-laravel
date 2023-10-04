@@ -47,6 +47,12 @@ class UpdateUser extends FormRequest
                     $this->validateRolesExist($attribute, $value, $fail);
                 },
             ],
+
+            // Campos de perfil
+            'name' => 'sometimes|string|max:255',
+            'last_name' => 'sometimes|string|max:255',
+            'identification' => 'sometimes|string|max:255',
+            'birth_date' => 'sometimes|date',
         ];
     }
 }

@@ -3,8 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+
+use App\Models\Profile;
 use Illuminate\Http\Request;
 use App\Http\Requests\PhotoUpload; 
+use App\Http\Requests\UpdateProfile; 
 
 use Kreait\Laravel\Firebase\Facades\Firebase;
 
@@ -12,6 +15,24 @@ class UserController extends Controller
 {
     public function index(){
         $users = User::all();
+    }
+
+    public function updateProfile(UpdateProfile $request){
+        $user = auth()->user();
+
+        // Obtenemos el perfil del usuario
+        $profile = $user->profile;
+
+        // Si el usuario no tiene un perfil, creamos uno 
+        if(!$profile) {
+            $profile = $user->profile()->create([]);
+        }
+
+        // Actualizar la información del perfil de usuario
+        $profile->update($request->validated());
+
+        // Devolvemos respuesta
+        return response()->json(['message'=>'Perfil actualizado exitosamente 😘😘']);
     }
 
 public function uploadProfilePhoto(PhotoUpload $request)

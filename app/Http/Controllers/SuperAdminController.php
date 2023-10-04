@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Role;
+use App\Models\Profile;
 use App\Http\Requests\RegisterSuperAdmin; 
 use App\Http\Requests\UpdateUser;
 use Illuminate\Support\Facades\Hash;
@@ -57,9 +58,6 @@ class SuperAdminController extends Controller
     public function update(UpdateUser $request, $id)
     {
         try {
-            // Validar los datos de la solicitud
-            $validatedData = $request->validated();
-    
             // Buscar el usuario por ID
             $user = User::find($id);
     
@@ -67,8 +65,22 @@ class SuperAdminController extends Controller
                 return response()->json(['message' => 'Usuario no encontrado'], 404);
             }
     
-            // Actualizar los datos del usuario
-            $user->update($validatedData);
+            // Validar y actualizar los datos del usuario
+            $user->update($request->only(['email', 'password']));
+    
+            // Verificar si el usuario tiene un perfil
+            if (!$user->profile) {
+                // Si no tiene perfil, creamos uno
+                $profileData = $request->only(['name', 'last_name', 'identification', 'birth_date']);
+                $profileData['user_id'] = $user->id;
+                $profileData['profile_picture'] = null;
+    
+                Profile::create($profileData);
+            } else {
+                // Si tiene perfil, actualizamos solamente
+                $profileData = $request->only(['name', 'last_name', 'identification', 'birth_date']);
+                $user->profile->update($profileData);
+            }
     
             // Actualizar roles directamente en el controlador
             $rolesToAssign = $request->input('roles', []);
@@ -87,6 +99,7 @@ class SuperAdminController extends Controller
             return response()->json(['message' => 'Error interno del servidor', 'error' => $e->getMessage()], 500);
         }
     }
+    
     
     public function show($id){
         $user = User::with('roles:name')->find($id);

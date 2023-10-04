@@ -3,6 +3,9 @@
 
 ## Project setup
 ```
+php artisan migration
+
+
 -- Insertar el rol 'admin'
 INSERT INTO roles (name) VALUES ('admin');
 
@@ -25,10 +28,12 @@ INSERT INTO user_roles (userId, roleId) VALUES (@userId, (SELECT id FROM roles W
 
 este se crea sin perfil y con la contraseña 1234567
 
-npm install
+
 ```
+
 
 ### Run
 ```
-npm run start
+
+php artisan serve
 ```
