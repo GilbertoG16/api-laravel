@@ -2,15 +2,15 @@
 
 namespace App\Models;
 
-//use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Auth\Notifications\VerifyEmail as VerifyEmailNotification;
 
-
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail 
 {
     use HasApiTokens, HasFactory, Notifiable;
 
@@ -51,6 +51,12 @@ class User extends Authenticatable
         // Verifica si el usuario tiene al menos uno de los roles especificados
         return $this->roles->pluck('name')->intersect($roles)->count() > 0;
     }
+
+    public function sendEmailVerificationNotification()
+    {
+        $this->notify(new CustomVerifyEmailNotification);
+    }
+    
    
     public function roles(){
         return $this->belongsToMany(Role::class, 'user_roles', 'userId', 'roleId');

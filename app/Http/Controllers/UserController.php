@@ -9,10 +9,19 @@ use Illuminate\Http\Request;
 use App\Http\Requests\PhotoUpload; 
 use App\Http\Requests\UpdateProfile; 
 
-use Kreait\Laravel\Firebase\Facades\Firebase;
+use App\Services\FirebaseStorageService;
+
 
 class UserController extends Controller
 {
+
+    protected $firebaseStorageService;
+
+    public function __construct(FirebaseStorageService $firebaseStorageService)
+    {
+        $this->firebaseStorageService = $firebaseStorageService;
+    }
+
     public function index(){
         $users = User::all();
     }
@@ -35,43 +44,44 @@ class UserController extends Controller
         return response()->json(['message'=>'Perfil actualizado exitosamente 😘😘']);
     }
 
-public function uploadProfilePhoto(PhotoUpload $request)
-{
-    // Verificar si la solicitud tiene un archivo de imagen válido
-    if ($request->hasFile('photo')) {
-        // Obtener el archivo de imagen del formulario
-        $photo = $request->file('photo');
-
-        // Obtener el id del usuario autenticado
-        $userId = auth()->id();
-
-        // Generar un nombre único para la imagen
-        $fileName = 'profile_' . $userId . '_' . time() . '.' . $photo->getClientOriginalExtension();
-
-        // Crear la ruta para almacenar la imagen en Firebase Storage
-        $storagePath = 'profile/' . $userId . '/' . $fileName;
-
-        // Subir la imagen a Firebase Storage
-        $firebaseStorage = Firebase::storage();
-        $fileContents = file_get_contents($photo->getRealPath());
-        $firebaseStorage->getBucket()->upload($fileContents, ['name' => $storagePath]);
-
-        // Obtener la URL pública para el archivo subido utilizando Firebase Admin SDK
-        $file = $firebaseStorage->getBucket()->object($storagePath);
-        $publicUrl = $file->signedUrl(new \DateTime('+1 day'));
-
-        // Obtener el perfil del usuario autenticado
-        $profile = auth()->user()->profile;
-
-        // Actualizar el campo de foto de perfil en el modelo de perfil con la ruta de almacenamiento
-        $profile->update(['profile_picture' => $publicUrl]);
-
-        // Puedes devolver la URL pública en la respuesta JSON
-        return response()->json(['message' => 'Foto de perfil subida con éxito', 'public_url' => $publicUrl]);
+    public function uploadProfilePhoto(PhotoUpload $request)
+    {
+        // Obtener el usuario autenticado
+        $user = auth()->user();
+    
+        // Verificar si el usuario está autenticado
+        if ($user) {
+            // Verificar si la solicitud tiene un archivo de imagen válido
+            if ($request->hasFile('photo')) {
+                // Obtener el archivo de imagen del formulario
+                $photo = $request->file('photo');
+    
+                // Verificar si el usuario ya tiene una foto de perfil
+                if ($user->profile->profile_picture) {
+                    // Llamar a la función para eliminar la foto anterior del bucket de Firebase
+                    $this->firebaseStorageService->deleteFileByUrl($user->profile->profile_picture);
+                
+                    // Actualizar la URL de la foto de perfil en la base de datos (o eliminarla si es necesario)
+                    $user->profile->update(['profile_picture' => null]);
+                }
+                
+    
+                // Subir la nueva foto de perfil
+                $publicUrl = $this->firebaseStorageService->uploadFile($photo, 'profile', $user->id);
+    
+                // Actualizar el campo de foto de perfil en el modelo de perfil con la ruta de almacenamiento
+                $user->profile->update(['profile_picture' => $publicUrl]);
+    
+                // Devolvemos la respuesta :)
+                return response()->json(['message' => 'Foto de perfil subida con éxito', 'public_url' => $publicUrl]);
+            }
+    
+            // Si la solicitud no tiene un archivo de imagen válido, devolver una respuesta de error
+            return response()->json(['error' => 'No se proporcionó una imagen válida'], 400);
+        }
+    
+        // Si el usuario no está autenticado, devolver una respuesta de error
+        return response()->json(['error' => 'Usuario no autenticado'], 401);
     }
-
-    // Si la solicitud no tiene un archivo de imagen válido, devolver una respuesta de error
-    return response()->json(['error' => 'No se proporcionó una imagen válida'], 400);
-}
-
+    
 }
