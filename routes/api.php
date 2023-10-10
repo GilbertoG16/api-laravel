@@ -43,7 +43,7 @@ Route::middleware('auth:sanctum', 'verified', 'status')->group(function () {
 Route::middleware('auth:sanctum','verified', 'role:superadmin', 'status' )->group(function () {
     Route::post('/user/register', [SuperAdminController::class, 'register']);
     Route::get('/user', [SuperAdminController::class, 'index']);
-    Route::get('/email/resend', [SuperAdminController::class, 'show']);
+    Route::get('/user/{id}', [SuperAdminController::class, 'show']);
     Route::put('/user/{id}', [SuperAdminController::class, 'update']);
     Route::delete('/user/{id}', [SuperAdminController::class, 'destroy']);
 
