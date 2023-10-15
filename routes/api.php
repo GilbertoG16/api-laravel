@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Learning\LearningInfoController;
 use App\Http\Controllers\SuperAdminController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\EntryController;
@@ -30,7 +31,7 @@ use App\Http\Controllers\VerifyEmailController;
 // Ruta para registrarse como usuario
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
-
+Route::get('/learning-info/{qrIdentifier}', [LearningInfoController::class, 'findByQrIdentifier']);
 
 Route::middleware('auth:sanctum', 'verified', 'status')->group(function () {
     Route::get('/profile', [AuthController::class, 'userProfile']);
@@ -57,6 +58,8 @@ Route::middleware('auth:sanctum','verified', 'role:admin', 'status' )->group(fun
     Route::post('/admin/locations', [LocationController::class, 'store']);
     Route::put('/admin/locations/{id}', [LocationController::class, 'update']);
     Route::delete('/admin/locations/{id}', [LocationController::class, 'destroy']);
+
+    Route::post('/learning-info', [LearningInfoController::class, 'create']);
 });
 
 

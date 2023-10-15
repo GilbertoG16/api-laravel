@@ -6,26 +6,23 @@ use Kreait\Laravel\Firebase\Facades\Firebase;
 use Google\Cloud\Core\Exception\NotFoundException;
 class FirebaseStorageService
 {
-    public function uploadFile($file, $folder, $parentId = null)
-    {
-        // Generar un nombre único para el archivo
-        $fileName = $parentId ? $parentId . '_' : '';
-        $fileName .= time() . '.' . $file->getClientOriginalExtension();
+    public function uploadFile($file, $storagePath)
+{    
+    // Generar un nombre único para el archivo
+    $uniqueFileName = uniqid() . '_' . $file->getClientOriginalName();
+
+    // Subir el archivo a Firebase Storage
+    $firebaseStorage = Firebase::storage();
+    $fileContents = file_get_contents($file->getRealPath());
+    $firebaseStorage->getBucket()->upload($fileContents, ['name' => $storagePath . $uniqueFileName]);
     
-        // Crear la ruta para almacenar el archivo en Firebase Storage
-        $storagePath = $folder . '/' . $parentId . '/' . $fileName;
+    // Obtener la URL pública firmando sin expiración
+    $fileObject = $firebaseStorage->getBucket()->object($storagePath . $uniqueFileName);
+    $publicUrl = $fileObject->signedUrl(new \DateTime('3000-01-01T00:00:00Z'));  // 3000-01-01 representa "sin expiración"
     
-        // Subir el archivo a Firebase Storage
-        $firebaseStorage = Firebase::storage();
-        $fileContents = file_get_contents($file->getRealPath());
-        $firebaseStorage->getBucket()->upload($fileContents, ['name' => $storagePath]);
-    
-        // Obtener la URL pública firmando sin expiración
-        $fileObject = $firebaseStorage->getBucket()->object($storagePath);
-        $publicUrl = $fileObject->signedUrl(new \DateTime('3000-01-01T00:00:00Z'));  // 3000-01-01 representa "sin expiración"
-    
-        return $publicUrl;
-    }
+    return $publicUrl;
+}
+
     
     public function deleteFileByUrl($fileUrl)
     {

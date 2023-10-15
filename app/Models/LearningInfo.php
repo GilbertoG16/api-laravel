@@ -25,18 +25,19 @@ class LearningInfo extends Model
         return $this->belongsTo(Category::class);
     }
 
-    public function video()
+    public function videos()
     {
-        return $this->hasOne(Video::class);
+        return $this->hasOne(Video::class); 
     }
-
+    
     public function images()
     {
         return $this->hasMany(Image::class);
     }
 
-    public function textAudio()
+    public function text_audios()
     {
         return $this->hasOne(TextAudio::class);
     }
+        
 }

@@ -8,8 +8,9 @@ use Illuminate\Database\Eloquent\Model;
 class TextAudio extends Model
 {
     use HasFactory;
+    protected $table = 'text_audios';
 
-    protected $fillabe = [
+    protected $fillable = [
         'text',
         'audio_url'
     ];

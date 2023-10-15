@@ -9,11 +9,12 @@ class QrInfoAssociation extends Model
 {
     use HasFactory;
 
-    protected $fillabe = [
+    protected $fillable = [
         'latitude',
         'longitude',
         'qr_identifier',
-        'location_id'
+        'location_id',
+        'learning_info_id',
     ];
 
     public function location()

@@ -15,7 +15,8 @@ return new class extends Migration
             $table->id();
 
             $table->foreignId('learning_info_id')->constrained();
-            $table->string('video_url');
+            
+            $table->string('video_url', 2048)->nullable();
             $table->timestamps();
         });
     }
