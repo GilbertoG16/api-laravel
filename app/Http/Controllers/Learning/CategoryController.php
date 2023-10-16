@@ -15,9 +15,15 @@ class CategoryController extends Controller
 
     public function show($id)
     {
-        $category = Category::findOrFail($id);
+        $category = Category::find($id);
+    
+        if (!$category) {
+            return response()->json(['message' => 'Categoría no encontrada 😕'], 404);
+        }
+    
         return response()->json($category, 200);
     }
+
 
     public function store(Request $request)
     {
@@ -32,7 +38,11 @@ class CategoryController extends Controller
 
     public function update(Request $request, $id)
     {
-        $category = Category::findOrFail($id);
+        $category = Category::find($id);
+
+        if (!$category) {
+            return response()->json(['message' => 'Categoría no encontrada 😕'], 404);
+        }
 
         $data = $request->validate([
             'name' => 'sometimes|string',
@@ -44,11 +54,18 @@ class CategoryController extends Controller
         return response()->json(['message' => 'Categoría actualizada exitosamente 😎', 'category' => $category], 200);
     }
 
+
     public function destroy($id)
     {
-        $category = Category::findOrFail($id);
+        $category = Category::find($id);
+
+        if (!$category) {
+            return response()->json(['message' => 'Categoría no encontrada 😕'], 404);
+        }
+
         $category->delete();
 
         return response()->json(['message' => 'Categoría eliminada exitosamente 😶‍🌫️'], 200);
     }
+
 }

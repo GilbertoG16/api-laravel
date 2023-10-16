@@ -54,7 +54,7 @@ Route::middleware('auth:sanctum','verified', 'role:superadmin', 'status' )->grou
     Route::get('/roles', [SuperAdminController::class, 'getAllRoles']);
 
     Route::put('/user/{id}/ban', [SuperAdminController::class, 'ban']);
-    Route::post('/entries', [EntryController::class, 'store']);
+
 });
 
 Route::middleware('auth:sanctum','verified', 'role:admin', 'status' )->group(function () {
