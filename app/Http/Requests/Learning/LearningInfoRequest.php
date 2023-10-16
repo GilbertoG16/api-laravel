@@ -33,8 +33,6 @@ class LearningInfoRequest extends FormRequest
             'qr_associations.*.latitude' => 'required|numeric',
             'qr_associations.*.longitude' => 'required|numeric',
             'qr_associations.*.location_id' => 'required|exists:locations,id',
-            
-            
         ];
     }
 }

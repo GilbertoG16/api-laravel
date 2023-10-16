@@ -53,7 +53,7 @@ class LocationController extends Controller
         $location = Location::find($id);
 
         if(!$location){
-            return response()->json(['messge'=>'Ubicación no encontrada'],404);
+            return response()->json(['message'=>'Ubicación no encontrada'],404);
         }
         // La borramos de la base de datos
         $location->delete();
