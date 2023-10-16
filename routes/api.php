@@ -9,6 +9,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\EntryController;
 
 use App\Http\Controllers\Learning\LocationController;
+use App\Http\Controllers\Learning\CategoryController;
 use App\Http\Controllers\Learning\EventController;
 
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
@@ -53,10 +54,11 @@ Route::middleware('auth:sanctum','verified', 'role:superadmin', 'status' )->grou
     Route::get('/roles', [SuperAdminController::class, 'getAllRoles']);
 
     Route::put('/user/{id}/ban', [SuperAdminController::class, 'ban']);
-    Route::post('/entries', [EntryController::class, 'store']);
+
 });
 
 Route::middleware('auth:sanctum','verified', 'role:admin', 'status' )->group(function () {
+    Route::get('/admin/locations',[LocationController::class, 'index']);
     Route::post('/admin/locations', [LocationController::class, 'store']);
     Route::put('/admin/locations/{id}', [LocationController::class, 'update']);
     Route::delete('/admin/locations/{id}', [LocationController::class, 'destroy']);
@@ -67,6 +69,12 @@ Route::middleware('auth:sanctum','verified', 'role:admin', 'status' )->group(fun
     Route::put('/learning-info/event/{id}', [EventController::class, 'update']);
     Route::delete('/learning-info/event/{id}', [EventController::class, 'destroy']);
     Route::get('/learning-info/event/index',[EventController::class, 'index']);
+
+    Route::get('/categories', [CategoryController::class, 'index']); 
+    Route::get('/categories/{id}', [CategoryController::class, 'show']);
+    Route::post('/categories', [CategoryController::class, 'store']); 
+    Route::put('/categories/{id}', [CategoryController::class, 'update']); 
+    Route::delete('/categories/{id}', [CategoryController::class, 'destroy']);
 });
 
 
