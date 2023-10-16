@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('qr_info_associations', function (Blueprint $table) {
             $table->id();
             $table->foreignId('location_id')->constrained();
-            $table->double('latitud');
-            $table->double('longitud');
+            $table->double('latitude');
+            $table->double('longitude');
             $table->string('qr_identifier')->unique();
             
             $table->foreignId('learning_info_id')->constrained();

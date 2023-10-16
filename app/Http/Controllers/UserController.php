@@ -65,9 +65,10 @@ class UserController extends Controller
                     $user->profile->update(['profile_picture' => null]);
                 }
                 
-    
+                //Construir la ruta
+                $storagePath = "profile/{$user->id}/" . time() . '.' . $photo->getClientOriginalExtension();
                 // Subir la nueva foto de perfil
-                $publicUrl = $this->firebaseStorageService->uploadFile($photo, 'profile', $user->id);
+                $publicUrl = $this->firebaseStorageService->uploadFile($photo, $storagePath);
     
                 // Actualizar el campo de foto de perfil en el modelo de perfil con la ruta de almacenamiento
                 $user->profile->update(['profile_picture' => $publicUrl]);

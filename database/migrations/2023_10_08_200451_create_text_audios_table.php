@@ -11,11 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('text_audio', function (Blueprint $table) {
+        Schema::create('text_audios', function (Blueprint $table) {
             $table->id();
             $table->foreignId('learning_info_id')->constrained();
             $table->string('text');
-            $table->string('audio_url');
+          
+            $table->string('audio_url',2048)->nullable();
             $table->timestamps();
         });
     }
@@ -25,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('text_audio');
+        Schema::dropIfExists('text_audios');
     }
 };
