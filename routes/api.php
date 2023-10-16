@@ -9,6 +9,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\EntryController;
 
 use App\Http\Controllers\Learning\LocationController;
+use App\Http\Controllers\Learning\EventController;
 
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 
@@ -61,6 +62,11 @@ Route::middleware('auth:sanctum','verified', 'role:admin', 'status' )->group(fun
     Route::delete('/admin/locations/{id}', [LocationController::class, 'destroy']);
 
     Route::post('/learning-info', [LearningInfoController::class, 'create']);
+
+    Route::post('/learning-info/event',[EventController::class, 'create']);
+    Route::put('/learning-info/event/{id}', [EventController::class, 'update']);
+    Route::delete('/learning-info/event/{id}', [EventController::class, 'destroy']);
+    Route::get('/learning-info/event/index',[EventController::class, 'index']);
 });
 
 
