@@ -32,6 +32,7 @@ use App\Http\Controllers\VerifyEmailController;
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::get('/learning-info/{qrIdentifier}', [LearningInfoController::class, 'findByQrIdentifier']);
+Route::get('/learning-info', [LearningInfoController::class, 'index']);
 
 Route::middleware('auth:sanctum', 'verified', 'status')->group(function () {
     Route::get('/profile', [AuthController::class, 'userProfile']);
