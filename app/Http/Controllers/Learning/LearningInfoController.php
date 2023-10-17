@@ -12,9 +12,11 @@ use App\Models\QrInfoAssociation;
 use App\Models\TextAudio;
 use App\Models\Image;
 use App\Models\Video;
-
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Learning\FileUploadController;
 use App\Http\Controllers\Learning\QrAssociationController;
+use App\Http\Controllers\UserController;
 
 use Illuminate\Database\Eloquent\Model;
 
@@ -22,11 +24,13 @@ class LearningInfoController extends Controller
 {
     protected $fileUploadController;
     protected $qrAssociationController;
+    protected $userController;
 
-    public function __construct(FileUploadController $fileUploadController, QrAssociationController $qrAssociationController)
+    public function __construct(FileUploadController $fileUploadController, QrAssociationController $qrAssociationController, UserController $userController)
     {
         $this->fileUploadController = $fileUploadController;
         $this->qrAssociationController = $qrAssociationController;
+        $this->userController = $userController;
     }
     //Vista con paginación para web
     public function index(Request $request)
@@ -59,8 +63,16 @@ class LearningInfoController extends Controller
             if (!$learningInfo) {
                 return response()->json(['message' => 'No se encontró el LearningInfo correspondiente'], 404);
             }
-
+            
             $learningInfo->load('images', 'videos', 'text_audios', 'qrInfoAssociations');
+
+            // Relacionar el usuario con la asociación de QR si hay un usuario autenticado y
+            // la búsqueda se hizo por qr_identifier
+            $user = auth('sanctum')->user();
+            if ($user && $qrAssociation->qr_identifier) {
+                $this->userController->relateUserWithQrAssociation($user->id, $qrAssociation);
+            }
+
 
             return new LearningInfoResourceOne($learningInfo);
         } catch (\Throwable $th) {

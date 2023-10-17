@@ -10,17 +10,18 @@ class CategoryController extends Controller
 {
     public function index()
     {
-        return response()->json(Category::all(), 200);
+
+        return response()->json(['Categorías '=> Category::all()], 200);
     }
 
     public function show($id)
     {
         $category = Category::find($id);
-    
+
         if (!$category) {
             return response()->json(['message' => 'Categoría no encontrada 😕'], 404);
         }
-    
+
         return response()->json($category, 200);
     }
 

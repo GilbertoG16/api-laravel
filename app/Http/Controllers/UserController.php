@@ -9,6 +9,9 @@ use Illuminate\Http\Request;
 use App\Http\Requests\PhotoUpload; 
 use App\Http\Requests\UpdateProfile; 
 
+use App\Models\QrInfoAssociation;
+use App\Models\UserQrHistory;
+
 use App\Services\FirebaseStorageService;
 
 
@@ -84,5 +87,28 @@ class UserController extends Controller
         // Si el usuario no está autenticado, devolver una respuesta de error
         return response()->json(['error' => 'Usuario no autenticado'], 401);
     }
+
+    public function relateUserWithQrAssociation($userId, $qrAssociation)
+    {
+        try {
+            // Obtener el usuario
+            $user = User::findOrFail($userId);
+    
+            // Relacionar el usuario con la asociación de QR
+            $userQrHistory = new UserQrHistory([
+                'qr_info_association_id' => $qrAssociation->id,
+            ]);
+    
+            $user->userQrHistories()->save($userQrHistory);
+    
+            return response()->json(['message' => 'Usuario relacionado con la asociación de QR exitosamente 😎'], 200);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al relacionar el usuario con la asociación de QR: ' . $th->getMessage(),
+            ]);
+        }
+    }
+    
     
 }
