@@ -3,7 +3,7 @@
 
 ## Project setup
 ```
-php artisan migration
+php artisan migrate
 
 
 -- Insertar el rol 'admin'
