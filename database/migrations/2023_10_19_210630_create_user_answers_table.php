@@ -11,11 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('learning_infos', function (Blueprint $table) {
+        Schema::create('user_answers', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('description');
-            $table->foreignId('category_id')->constrained();
+            $table->foreignId('user_id')->constrained();
+            $table->foreignId('answer_id')->constrained();
+            $table->boolean('is_correct');
             $table->timestamps();
         });
     }
@@ -25,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('learning_infos');
+        Schema::dropIfExists('user_answers');
     }
 };

@@ -12,7 +12,7 @@ class LearningInfo extends Model
     protected $fillable = [
         'name',
         'category_id',
-        
+        'description',
     ];
 
     public function qrInfoAssociations()
@@ -37,12 +37,16 @@ class LearningInfo extends Model
 
     public function text_audios()
     {
-        return $this->hasOne(TextAudio::class);
+        return $this->hasMany(TextAudio::class);
     }
 
     public function events()
     {
         return $this->hasMany(Event::class);
     }
-        
+
+    public function trivias()
+    {
+        return $this->hasOne(Trivia::class);
+    }
 }

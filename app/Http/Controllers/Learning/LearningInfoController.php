@@ -36,11 +36,19 @@ class LearningInfoController extends Controller
     public function index(Request $request)
     {
         $perPage = $request->get('per_page', 10);
-
-        $learningInfo = LearningInfo::with('images')->paginate($perPage);
-        
+        $categoryId = $request->get('category_id');
+    
+        $learningInfo = LearningInfo::with('images')
+            ->when($categoryId, function ($query) use ($categoryId) {
+                $query->whereHas('category', function ($subquery) use ($categoryId) {
+                    $subquery->where('id', $categoryId);
+                });
+            })
+            ->paginate($perPage);
+    
         return LearningInfoPaginateResource::collection($learningInfo);
     }
+    
     // Vista única del Learning-puede guiarse por identificador de qr o por id para poder hacer doble la vista web
     public function findByQrIdentifier($qrIdentifier)
     {

@@ -11,6 +11,7 @@ use App\Http\Controllers\EntryController;
 use App\Http\Controllers\Learning\LocationController;
 use App\Http\Controllers\Learning\CategoryController;
 use App\Http\Controllers\Learning\EventController;
+use App\Http\Controllers\Trivia\TriviaController;
 
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 
@@ -64,6 +65,10 @@ Route::middleware('auth:sanctum','verified', 'role:admin', 'status' )->group(fun
     Route::delete('/admin/locations/{id}', [LocationController::class, 'destroy']);
 
     Route::post('/learning-info', [LearningInfoController::class, 'create']);
+
+
+    Route::post('/trivias', [TriviaController::class, 'createTrivia']);
+    Route::post('/trivias/{triviaId}', [TriviaController::class, 'updateTrivia']); // Es actualización pero con laravel no se acepta multipart en el put
 
     Route::post('/learning-info/event',[EventController::class, 'create']);
     Route::put('/learning-info/event/{id}', [EventController::class, 'update']);
