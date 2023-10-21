@@ -11,20 +11,19 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('learning_infos', function (Blueprint $table) {
+        Schema::create('questions', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('description');
-            $table->foreignId('category_id')->constrained();
+            $table->foreignId('trivia_id')->constrained('trivias');
+            $table->text('question_text');
             $table->timestamps();
         });
     }
-
+    
     /**
      * Reverse the migrations.
      */
     public function down(): void
     {
-        Schema::dropIfExists('learning_infos');
+        Schema::dropIfExists('questions');
     }
 };

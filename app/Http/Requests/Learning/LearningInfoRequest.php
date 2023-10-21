@@ -25,14 +25,16 @@ class LearningInfoRequest extends FormRequest
             'name' => 'required|string',
             'description' => 'required|string',
             'category_id' => 'required|integer|exists:categories,id',
-            'text' => 'required|string',
             'images.*' => 'required|file|mimes:jpeg,png', 
             'video' => 'nullable|file|mimes:mp4',
-            'audio' => 'nullable|file|mimes:mp3,wav',
+            'text_audios' => 'required|array', 
+            'text_audios.*.text' => 'required|string', 
+            'text_audios.*.audio' => 'nullable|file|mimes:mp3,wav', 
             'qr_associations' => 'required|array',
             'qr_associations.*.latitude' => 'required|numeric',
             'qr_associations.*.longitude' => 'required|numeric',
             'qr_associations.*.location_id' => 'required|exists:locations,id',
         ];
+        
     }
 }

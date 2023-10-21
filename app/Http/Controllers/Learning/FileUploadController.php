@@ -36,20 +36,21 @@ class FileUploadController extends Controller
             $this->associateFileToLearningInfo($videoModel, $learningInfo);
         }
     
-        // Subir audio
-        if (isset($data['audio']) && $data['audio']) {
-            $audioUrl = $this->firebaseStorageService->uploadFile($data['audio'], $this->getStorageFolder($learningInfo, 'audios'));
-            
-      
-            $textValue = isset($data['text']) ? $data['text'] : ''; 
-            
-            $audioModel = new TextAudio([
-                'audio_url' => $audioUrl,
-                'text' => $textValue,
-            ]);
-        
-            $this->associateFileToLearningInfo($audioModel, $learningInfo);
-        }
+         // Subir múltiples registros de audio y texto
+         if (isset($data['text_audios']) && is_array($data['text_audios'])) {
+             foreach ($data['text_audios'] as $audioItem) {
+                 $audioUrl = $this->firebaseStorageService->uploadFile($audioItem['audio'], $this->getStorageFolder($learningInfo, 'audios'));
+                
+                 $textValue = isset($audioItem['text']) ? $audioItem['text'] : '';
+                
+                 $audioModel = new TextAudio([
+                     'audio_url' => $audioUrl,
+                     'text' => $textValue,
+                 ]);
+             
+                 $this->associateFileToLearningInfo($audioModel, $learningInfo);
+             }
+         }
         
     }
     
