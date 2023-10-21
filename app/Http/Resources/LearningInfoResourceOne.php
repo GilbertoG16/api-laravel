@@ -28,12 +28,14 @@ class LearningInfoResourceOne extends JsonResource
                 ]
                 : null,
             'text_audios' => $this->text_audios
-                ? [
-                    'audio_url' => $this->text_audios->audio_url,
-                    'text' => $this->text_audios->text,
-                    // Otros campos de TextAudio si es necesario
-                ]
+                ? $this->text_audios->map(function ($audio) {
+                    return [
+                        'audio_url' => $audio->audio_url,
+                        // Otros campos de TextAudio si es necesario
+                    ];
+                })->all()
                 : null,
+            
             'qr_info_associations' => $this->qrInfoAssociations->map(function ($association) {
                 return [
                     'qr_identifier' => $association->qr_identifier,
