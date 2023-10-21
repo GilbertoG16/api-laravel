@@ -17,21 +17,21 @@ class LearningInfoResourceOne extends JsonResource
                 ? $this->images->map(function ($image) {
                     return [
                         'image_url' => $image->image_url,
-                        // Otros campos de Image si es necesario
+                        
                     ];
                 })
                 : null,
             'videos' => $this->videos
                 ? [
                     'video_url' => $this->videos->video_url,
-                    // Otros campos de Video si es necesario
+             
                 ]
                 : null,
             'text_audios' => $this->text_audios
                 ? $this->text_audios->map(function ($audio) {
                     return [
                         'audio_url' => $audio->audio_url,
-                        // Otros campos de TextAudio si es necesario
+                        'text' => $audio->text,
                     ];
                 })->all()
                 : null,
