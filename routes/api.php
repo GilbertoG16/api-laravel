@@ -39,6 +39,8 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::get('/learning-info/{qrIdentifier}', [LearningInfoController::class, 'findByQrIdentifier']);
 Route::get('/learning-info', [LearningInfoController::class, 'index']);
 
+Route::get('/university-sites', [LearningInfoController::class, 'universitySites']);
+
 Route::middleware('auth:sanctum', 'verified', 'status')->group(function () {
     Route::get('/profile', [UserController::class, 'userProfile']);
     Route::post('/logout', [AuthController::class, 'logout']);
