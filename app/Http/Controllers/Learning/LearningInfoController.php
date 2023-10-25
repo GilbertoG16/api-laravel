@@ -5,11 +5,13 @@ namespace App\Http\Controllers\Learning;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Http\Requests\Learning\LearningInfoRequest;
-use App\Http\Resources\LearningInfoResourceOne;  
+use App\Http\Resources\LearningInfoResourceOne; 
+use App\Http\Resources\UniversitySiteResource;  
 use App\Http\Resources\LearningInfoPaginateResource;  
 use App\Models\LearningInfo;
 use App\Models\QrInfoAssociation;
 use App\Models\TextAudio;
+use App\Models\Category;
 use App\Models\Image;
 use App\Models\Video;
 use App\Models\User;
@@ -114,5 +116,31 @@ class LearningInfoController extends Controller
 
         return response()->json(['message'=>'Operación exitosa','learning_info'=> $learningInfo], 200);
     }
+
+    // Traer solamente los Learnings cuyos nombres de categoría son Sitios de la Universidad
+    public function universitySites(Request $request)
+    {
+        $categories = Category::where('name', 'Sitios de la Universidad')->get();
     
+        $learningInfo = LearningInfo::with(['images', 'category'])
+            ->whereIn('category_id', $categories->pluck('id'))
+            ->get();
+    
+        // Comprobar si las imágenes se cargan correctamente
+        $learningInfo->each(function ($learning) {
+            $learning->load('images');
+        });
+    
+        // Filtramos para solo traer una imagen
+        $learningInfo->each(function ($learning) {
+            $learning->images = $learning->images->take(1);
+        });
+    
+        // Comprobar si no se encontraron LearningInfo
+        if ($learningInfo->isEmpty()) {
+            return response()->json(['message' => 'No se encontraron LearningInfo relacionados con Sitios de la Universidad'], 404);
+        }
+    
+        return UniversitySiteResource::collection($learningInfo);
+    }
 }
