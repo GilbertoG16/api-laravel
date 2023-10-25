@@ -40,7 +40,7 @@ Route::get('/learning-info/{qrIdentifier}', [LearningInfoController::class, 'fin
 Route::get('/learning-info', [LearningInfoController::class, 'index']);
 
 Route::middleware('auth:sanctum', 'verified', 'status')->group(function () {
-    Route::get('/profile', [AuthController::class, 'userProfile']);
+    Route::get('/profile', [UserController::class, 'userProfile']);
     Route::post('/logout', [AuthController::class, 'logout']);
 
     Route::put('/user/profile/updated', [UserController::class, 'updateProfile']);

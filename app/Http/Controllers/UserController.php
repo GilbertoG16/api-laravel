@@ -8,7 +8,6 @@ use App\Models\Profile;
 use Illuminate\Http\Request;
 use App\Http\Requests\PhotoUpload; 
 use App\Http\Requests\UpdateProfile; 
-
 use App\Models\QrInfoAssociation;
 use App\Models\UserQrHistory;
 
@@ -109,6 +108,29 @@ class UserController extends Controller
             ]);
         }
     }
+
+    public function userProfile(Request $request) {
+        $user = auth()->user();
+        
+        // Selecciona los campos de perfil que deseas incluir en la respuesta
+        $profile = $user->profile;
+    
+        // Estructura la respuesta en un arreglo limpio
+        $response = [
+            'id' => $user->id,
+            'email' => $user->email,
+            'name' => $profile->name,
+            'last_name' => $profile->last_name,
+            'identification' => $profile->identification,
+            'birth_date' => $profile->birth_date,
+            'profile_picture' => $profile->profile_picture,
+            'roles' => $user->roles->pluck('name'),
+        ];
+    
+        return response()->json($response);
+    }
+    
+    
     
     
 }
