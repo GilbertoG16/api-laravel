@@ -8,6 +8,8 @@ use App\Http\Controllers\SuperAdminController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\EntryController;
 
+use App\Http\Controllers\UserQrHistoryController;
+
 use App\Http\Controllers\Learning\LocationController;
 use App\Http\Controllers\Learning\CategoryController;
 use App\Http\Controllers\Learning\EventController;
@@ -38,7 +40,7 @@ Route::get('/learning-info/{qrIdentifier}', [LearningInfoController::class, 'fin
 Route::get('/learning-info', [LearningInfoController::class, 'index']);
 
 Route::middleware('auth:sanctum', 'verified', 'status')->group(function () {
-    Route::get('/profile', [AuthController::class, 'userProfile']);
+    Route::get('/profile', [UserController::class, 'userProfile']);
     Route::post('/logout', [AuthController::class, 'logout']);
 
     Route::put('/user/profile/updated', [UserController::class, 'updateProfile']);
@@ -74,6 +76,10 @@ Route::middleware('auth:sanctum','verified', 'role:admin', 'status' )->group(fun
     Route::put('/learning-info/event/{id}', [EventController::class, 'update']);
     Route::delete('/learning-info/event/{id}', [EventController::class, 'destroy']);
     Route::get('/learning-info/event/index',[EventController::class, 'index']);
+
+    Route::get('/user-qr-histories', [UserQrHistoryController::class, 'index']);
+    Route::get('/user-qr-histories/{userId}', [UserQrHistoryController::class, 'show']);
+
 
     Route::get('/categories', [CategoryController::class, 'index']); 
     Route::get('/categories/{id}', [CategoryController::class, 'show']);

@@ -82,16 +82,6 @@ public function login(Request $request) {
     ])->withCookie($cookie);
 }
 
-    public function userProfile(Request $request) {
-        $user = Auth::user();
-        $roles = $user->roles()->pluck('name'); // Obtener los nombres de los roles
-    
-        return response()->json([
-            'user' => $user,
-            'roles' => $roles,
-        ]);
-    }
-
     public function logout(Request $request) {
         $request->user()->currentAccessToken()->delete();
     
