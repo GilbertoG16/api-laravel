@@ -55,35 +55,37 @@ class LearningInfoController extends Controller
     public function findByQrIdentifier($qrIdentifier)
     {
         try {
-            // Buscamos la instancia de la tabla por qr_identifier
+            // Buscar la instancia de la tabla por qr_identifier
             $qrAssociation = QrInfoAssociation::where('qr_identifier', $qrIdentifier)->first();
-
+    
             if (!$qrAssociation) {
-                // Si no se encuentra por qr_identifier, intentamos buscar por id
-                $qrAssociation = QrInfoAssociation::find($qrIdentifier);
-
-                if (!$qrAssociation) {
+                // Si no se encuentra por qr_identifier, intenta buscar por id en el mismo LearningInfo
+                $learningInfo = LearningInfo::find($qrIdentifier);
+    
+                if (!$learningInfo) {
                     return response()->json(['message' => 'No se encontró la asociación de QR'], 404);
                 }
+    
+                // Carga las relaciones en el LearningInfo
+                $learningInfo->load('images', 'videos', 'text_audios', 'qrInfoAssociations', 'trivias');
+            } else {
+                // Obtiene el LearningInfo correspondiente a la asociación de QR
+                $learningInfo = $qrAssociation->learningInfo;
+    
+                if (!$learningInfo) {
+                    return response()->json(['message' => 'No se encontró el LearningInfo correspondiente'], 404);
+                }
+    
+                // Carga las relaciones en el LearningInfo
+                $learningInfo->load('images', 'videos', 'text_audios', 'qrInfoAssociations', 'trivias');
             }
-
-            // Obtener el LearningInfo correspondiente a la asociación de QR
-            $learningInfo = $qrAssociation->learningInfo;
-
-            if (!$learningInfo) {
-                return response()->json(['message' => 'No se encontró el LearningInfo correspondiente'], 404);
-            }
-            
-            $learningInfo->load('images', 'videos', 'text_audios', 'qrInfoAssociations');
-
-            // Relacionar el usuario con la asociación de QR si hay un usuario autenticado y
-            // la búsqueda se hizo por qr_identifier
+    
+            // Relaciona el usuario con la asociación de QR si hay un usuario autenticado
             $user = auth('sanctum')->user();
-            if ($user && $qrAssociation->qr_identifier) {
+            if ($user && $qrAssociation && $qrAssociation->qr_identifier) {
                 $this->userController->relateUserWithQrAssociation($user->id, $qrAssociation);
             }
-
-
+    
             return new LearningInfoResourceOne($learningInfo);
         } catch (\Throwable $th) {
             return response()->json([
@@ -92,6 +94,7 @@ class LearningInfoController extends Controller
             ]);
         }
     }
+    
 
     // Creación de un Learning/Algunas cosas se dividen en otros controladores como por ejemplo los files 
     public function create(LearningInfoRequest $request)

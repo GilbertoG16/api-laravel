@@ -12,10 +12,17 @@ class Score extends Model
     protected $fillable = [
         'user_id',
         'score',
+        'trivia_id'
     ];
 
     public function user()
     {
         return $this->belongsTo(User::class);
     }
+
+    public function trivia()
+    {
+        return $this->belongsTo(Trivia::class);
+    }
+
 }

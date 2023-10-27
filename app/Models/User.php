@@ -70,4 +70,10 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->hasMany(UserQrHistory::class);
     }
+
+    public function answers()
+    {   
+        return $this->belongsToMany(Answer::class, 'user_answers')->withPivot('is_correct');
+    }
+
 }
