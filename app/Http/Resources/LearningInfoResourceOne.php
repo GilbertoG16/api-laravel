@@ -17,14 +17,12 @@ class LearningInfoResourceOne extends JsonResource
                 ? $this->images->map(function ($image) {
                     return [
                         'image_url' => $image->image_url,
-                        
                     ];
                 })
                 : null,
             'videos' => $this->videos
                 ? [
                     'video_url' => $this->videos->video_url,
-             
                 ]
                 : null,
             'text_audios' => $this->text_audios
@@ -41,6 +39,14 @@ class LearningInfoResourceOne extends JsonResource
                     'qr_identifier' => $association->qr_identifier,
                 ];
             }),
+
+            'trivias' => $this->trivias
+                ? [
+                    'id' =>$this->trivias->id,
+                    'name' => $this->trivias->name,
+                    'description' => $this->trivias->description,
+                ]
+                : null,
         ];
     }
 }

@@ -6,10 +6,13 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\FileUploadController;
 use App\Http\Requests\Trivia\CreateTriviaRequest;
 use App\Http\Requests\Trivia\UpdateTriviaRequest;
+use App\Http\Requests\SubmitAnswersRequest;
 use App\Models\Answer;
 use App\Models\ImageQuestion;
 use App\Models\Question;
 use App\Models\Trivia;
+use App\Models\UserAnswers;
+use App\Models\Score;
 use App\Services\FirebaseStorageService;
 use Kreait\Firebase\ServiceAccount;
 use Kreait\Firebase\Factory;
@@ -175,5 +178,120 @@ class TriviaController extends Controller
     
         return response()->json(['message' => 'Trivia actualizada exitosamente 😍', 'trivia' => $trivia], 200);
     }
-        
+
+    /*-- Aquí comienza la lógica para mostrar las trivias :)--*/
+    public function getTriviaQuestions(Request $request, $triviaId)
+    {
+            $trivia = Trivia::find($triviaId);
+            
+            if (!$trivia) {
+                return response()->json(['message' => 'No se encontró la trivia'], 404);
+            }
+
+            // Obtén hasta 5 preguntas aleatorias de la trivia
+            $questions = $trivia->questions()->inRandomOrder()->take(5)->get();
+
+            $questions->each(function ($question) {
+                $answers = $question->answers;
+            
+                // Selecciona una cantidad específica de respuestas correctas (buenas) y respuestas incorrectas (malas)
+                $correctAnswers = $answers->where('is_correct', 1)->shuffle()->take(1); // Cambia el número 1 al número deseado de respuestas correctas
+                $incorrectAnswers = $answers->where('is_correct', 0)->shuffle()->take(3); // Cambia el número 3 al número deseado de respuestas incorrectas
+            
+                // Mezcla todas las respuestas y selecciona una aleatoria de todas
+                $shuffledAnswers = $correctAnswers->concat($incorrectAnswers)->shuffle();
+            
+                $question->answers = $shuffledAnswers->map(function ($answer) {
+                    return [
+                        'id' => $answer->id,
+                        'text' => $answer->text,
+                        'is_correct' => $answer->is_correct,
+                    ];
+                });
+            
+                // Verifica si la pregunta tiene una `question_image` y agrega la URL de la imagen al mismo nivel que el `question_text`
+                if ($question->imageQuestion) {
+                    $question->image_path = $question->imageQuestion->image_path;
+                }
+     });
+    
+        // Construye la respuesta JSON
+         $response = [
+             'trivia' => [
+                 'name' => $trivia->name,
+                 'description' => $trivia->description,
+             ],
+             'questions' => $questions->map(function ($question) {
+                 $questionData = [
+                     'id' => $question->id,
+                     'trivia_id' => $question->trivia_id,
+                     'question_text' => $question->question_text,
+                     'answers' => $question->answers,
+                 ];
+             
+                 // Si la pregunta tiene una imagen, agrega la URL al mismo nivel que el `question_text`
+                 if ($question->image_path) {
+                     $questionData['image_path'] = $question->image_path;
+                 }
+             
+                 return $questionData;
+             }),
+         ];
+     
+         return response()->json($response);
+    }
+
+    
+    public function submitAnswers(SubmitAnswersRequest $request)
+    {
+        $user = auth()->user();
+        $data = $request->all();
+    
+        // Calcula el puntaje (5 puntos por respuesta correcta)
+        $score = 0;
+    
+        // Asume que las respuestas están en $data['answers']
+        foreach ($data['answers'] as $answer) {
+            $answerModel = Answer::find($answer['answer_id']);
+    
+            if ($answerModel && $answerModel->is_correct) {
+                $score += 5;
+            }
+    
+            // Guarda la respuesta relacionada al usuario
+            $user->answers()->attach($answer['answer_id'], [
+                'is_correct' => $answerModel->is_correct,
+                'question_id' => $answerModel->question_id,
+            ]);
+        }
+    
+        // Asume que obtuviste el trivia_id de la solicitud
+        $triviaId = $data['trivia_id'];
+    
+        // Busca el puntaje actual del usuario para este trivia
+        $userScore = Score::where('user_id', $user->id)
+            ->where('trivia_id', $triviaId)
+            ->first();
+    
+        if (!$userScore) {
+            // Si no existe un puntaje para esta trivia, crea uno nuevo
+            $userScore = new Score([
+                'user_id' => $user->id,
+                'trivia_id' => $triviaId,
+                'score' => $score,
+            ]);
+        } else {
+            // Si ya existe un puntaje, verifica si el nuevo puntaje es más alto y actualízalo
+            if ($score > $userScore->score) {
+                $userScore->score = $score;
+            }
+        }
+    
+        $userScore->save();
+    
+        return response()->json(['message' => 'Respuestas guardadas exitosamente.', 'score'=> $score], 200);
+    }
+    
+    
+
 }

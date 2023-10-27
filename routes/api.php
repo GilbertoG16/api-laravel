@@ -47,6 +47,9 @@ Route::middleware('auth:sanctum', 'verified', 'status')->group(function () {
 
     Route::put('/user/profile/updated', [UserController::class, 'updateProfile']);
     Route::post('/user/upload/profile', [UserController::class, 'uploadProfilePhoto']);
+
+    Route::get('/trivia/{triviaId}/questions', [TriviaController::class, 'getTriviaQuestions']);
+    Route::post('/trivia/userResponse', [TriviaController::class, 'submitAnswers']);
 });
 
 Route::middleware('auth:sanctum','verified', 'role:superadmin', 'status' )->group(function () {
