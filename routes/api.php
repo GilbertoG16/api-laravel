@@ -72,6 +72,7 @@ Route::middleware('auth:sanctum','verified', 'role:admin', 'status' )->group(fun
     Route::delete('/admin/locations/{id}', [LocationController::class, 'destroy']);
 
     Route::post('/learning-info', [LearningInfoController::class, 'create']);
+    Route::post('/learning-info/{id}', [LearningInfoController::class, 'update']);
 
 
     Route::post('/trivias', [TriviaController::class, 'createTrivia']);

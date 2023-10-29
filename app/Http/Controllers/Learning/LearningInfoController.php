@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Learning;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Http\Requests\Learning\LearningInfoRequest;
+use App\Http\Requests\Learning\LearningInfoUpdateRequest;
 use App\Http\Resources\LearningInfoResourceOne; 
 use App\Http\Resources\UniversitySiteResource;  
 use App\Http\Resources\LearningInfoPaginateResource;  
@@ -145,5 +146,46 @@ class LearningInfoController extends Controller
         }
     
         return UniversitySiteResource::collection($learningInfo);
+    }
+
+    // Update de los Learning Infos
+    public function update(LearningInfoUpdateRequest $request, $id)
+    {
+        $data = $request->validated();
+
+        // Busca el learningInfo por su ID
+        $learningInfo = LearningInfo::find($id);
+
+        // Verificamos si el LearningInfo existe
+        if(!$learningInfo) {
+            return response()->json(['message'=>'No se encontró el LearningInfo correspondiente'],404);
+        }
+
+        // Actualizamos los campos del LearningInfo si se proporcionan en la solicitud
+        if(isset($data['name'])) {
+            $learningInfo->update([
+                'name' => $data['name'],
+            ]);
+        }
+
+        if(isset($data['description'])) {
+            $learningInfo->update([
+                'description' => $data['description'],
+            ]);
+        }
+
+        if(isset($data['category_id'])) {
+            $learningInfo->update([
+                'category_id' => $data['category_id'],
+            ]);
+        }
+
+        // Llama al método existente para subir y asociar archivos
+        $this->fileUploadController->updateFiles($data, $learningInfo);
+
+        // Llamamos al método existente para actualizar 
+        $this->qrAssociationController->updateQrAssociations($data['qr_associations'], $learningInfo);
+        // Devovlemos una respuesta con éxito
+        return response()->json(['message'=> 'Operación exitosa', 'learning_info'=> $learningInfo], 200);
     }
 }
