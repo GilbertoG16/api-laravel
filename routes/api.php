@@ -8,6 +8,8 @@ use App\Http\Controllers\SuperAdminController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\EntryController;
 
+use App\Http\Controllers\AppointmentController;
+
 use App\Http\Controllers\UserQrHistoryController;
 
 use App\Http\Controllers\Learning\LocationController;
@@ -50,6 +52,8 @@ Route::middleware('auth:sanctum', 'verified', 'status')->group(function () {
 
     Route::get('/trivia/{triviaId}/questions', [TriviaController::class, 'getTriviaQuestions']);
     Route::post('/trivia/userResponse', [TriviaController::class, 'submitAnswers']);
+
+    Route::post('/appointments', [AppointmentController::class, 'create']);
 });
 
 Route::middleware('auth:sanctum','verified', 'role:superadmin', 'status' )->group(function () {
@@ -74,6 +78,7 @@ Route::middleware('auth:sanctum','verified', 'role:admin', 'status' )->group(fun
     Route::post('/learning-info', [LearningInfoController::class, 'create']);
     Route::post('/learning-info/{id}', [LearningInfoController::class, 'update']);
 
+    Route::post('/appointments/user/{id}', [AppointmentController::class, 'confirmAccess']);
 
     Route::post('/trivias', [TriviaController::class, 'createTrivia']);
     Route::post('/trivias/{triviaId}', [TriviaController::class, 'updateTrivia']); // Es actualización pero con laravel no se acepta multipart en el put
