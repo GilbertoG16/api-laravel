@@ -10,6 +10,7 @@ use App\Http\Resources\LearningInfoResourceOne;
 use App\Http\Resources\UniversitySiteResource;  
 use App\Http\Resources\LearningInfoPaginateResource;  
 use App\Models\LearningInfo;
+use App\Models\Location;
 use App\Models\QrInfoAssociation;
 use App\Models\TextAudio;
 use App\Models\Category;
@@ -19,6 +20,8 @@ use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Learning\FileUploadController;
 use App\Http\Controllers\Learning\QrAssociationController;
+
+use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\UserController;
 
 use Illuminate\Database\Eloquent\Model;
@@ -28,12 +31,13 @@ class LearningInfoController extends Controller
     protected $fileUploadController;
     protected $qrAssociationController;
     protected $userController;
-
-    public function __construct(FileUploadController $fileUploadController, QrAssociationController $qrAssociationController, UserController $userController)
+    protected $appointmentController;
+    public function __construct(FileUploadController $fileUploadController, QrAssociationController $qrAssociationController, UserController $userController,AppointmentController $appointmentController)
     {
         $this->fileUploadController = $fileUploadController;
         $this->qrAssociationController = $qrAssociationController;
         $this->userController = $userController;
+        $this->appointmentController = $appointmentController;
     }
     //Vista con paginación para web
     public function index(Request $request)
@@ -85,6 +89,11 @@ class LearningInfoController extends Controller
             $user = auth('sanctum')->user();
             if ($user && $qrAssociation && $qrAssociation->qr_identifier) {
                 $this->userController->relateUserWithQrAssociation($user->id, $qrAssociation);
+                // Verificamos si el usuario tiene permisos o si se requiere permisos para estar en este sitio
+                $locationId = $qrAssociation->location_id;
+
+                // Llama a la función hasPermission
+                $hasPermission = $this->appointmentController->hasPermission($user, $locationId);
             }
     
             return new LearningInfoResourceOne($learningInfo);
