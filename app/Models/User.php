@@ -76,4 +76,21 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->belongsToMany(Answer::class, 'user_answers')->withPivot('is_correct');
     }
 
+    public function appointments()
+    {
+        return $this->hasMany(Appointment::class);
+    }
+
+    public function unauthorizedAccesses()
+    {
+        return $this->hasMany(UnauthorizedAccess::class);
+    }
+
+    public function achievements()
+    {
+        return $this->belongsToMany(Achievement::class, 'user_achievements')
+            ->withPivot('unlocked_at')
+            ->withTimestamps();
+    }
+
 }
