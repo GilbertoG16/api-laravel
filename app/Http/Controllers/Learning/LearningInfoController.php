@@ -82,7 +82,7 @@ class LearningInfoController extends Controller
                 }
     
                 // Carga las relaciones en el LearningInfo
-                $learningInfo->load('images', 'videos', 'text_audios', 'qrInfoAssociations', 'trivias');
+                $learningInfo->load('images', 'videos', 'text_audios', 'qrInfoAssociations', 'trivias', 'category');
             }
     
             // Relaciona el usuario con la asociación de QR si hay un usuario autenticado
