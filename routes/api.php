@@ -79,7 +79,7 @@ Route::middleware('auth:sanctum','verified', 'role:admin', 'status' )->group(fun
     Route::post('/learning-info/{id}', [LearningInfoController::class, 'update']);
 
     Route::post('/appointments/user/{id}', [AppointmentController::class, 'confirmAccess']);
-
+    Route::get('/appointments/user', [AppointmentController::class, 'index']);
     Route::post('/trivias', [TriviaController::class, 'createTrivia']);
     Route::post('/trivias/{triviaId}', [TriviaController::class, 'updateTrivia']); // Es actualización pero con laravel no se acepta multipart en el put
 

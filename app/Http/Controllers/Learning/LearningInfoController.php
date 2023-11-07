@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers\Learning;
-
+use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Http\Requests\Learning\LearningInfoRequest;
@@ -82,7 +82,7 @@ class LearningInfoController extends Controller
                 }
     
                 // Carga las relaciones en el LearningInfo
-                $learningInfo->load('images', 'videos', 'text_audios', 'qrInfoAssociations', 'trivias');
+                $learningInfo->load('images', 'videos', 'text_audios', 'qrInfoAssociations', 'trivias', 'category');
             }
     
             // Relaciona el usuario con la asociación de QR si hay un usuario autenticado
@@ -91,7 +91,7 @@ class LearningInfoController extends Controller
                 $this->userController->relateUserWithQrAssociation($user->id, $qrAssociation);
                 // Verificamos si el usuario tiene permisos o si se requiere permisos para estar en este sitio
                 $locationId = $qrAssociation->location_id;
-
+               
                 // Llama a la función hasPermission
                 $hasPermission = $this->appointmentController->hasPermission($user, $locationId);
             }
