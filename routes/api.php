@@ -47,6 +47,7 @@ Route::middleware('auth:sanctum', 'verified', 'status')->group(function () {
     Route::get('/profile', [UserController::class, 'userProfile']);
     Route::post('/logout', [AuthController::class, 'logout']);
 
+    Route::get('/user/getAllQRInfo', [LearningInfoController::class, 'getQrInfoAssociations']);
     Route::put('/user/profile/updated', [UserController::class, 'updateProfile']);
     Route::post('/user/upload/profile', [UserController::class, 'uploadProfilePhoto']);
 
@@ -77,11 +78,13 @@ Route::middleware('auth:sanctum','verified', 'role:admin', 'status' )->group(fun
 
     Route::post('/learning-info', [LearningInfoController::class, 'create']);
     Route::post('/learning-info/{id}', [LearningInfoController::class, 'update']);
+    Route::delete('/learning-info/{id}', [LearningInfoController::class, 'destroy']);
 
     Route::post('/appointments/user/{id}', [AppointmentController::class, 'confirmAccess']);
     Route::get('/appointments/user', [AppointmentController::class, 'index']);
     Route::post('/trivias', [TriviaController::class, 'createTrivia']);
     Route::post('/trivias/{triviaId}', [TriviaController::class, 'updateTrivia']); // Es actualización pero con laravel no se acepta multipart en el put
+    Route::delete('/trivias/{triviasId}', [TriviaController::class, 'destroy']);
 
     Route::post('/learning-info/event',[EventController::class, 'create']);
     Route::put('/learning-info/event/{id}', [EventController::class, 'update']);

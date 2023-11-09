@@ -20,7 +20,7 @@ class Achievement extends Model
 
     public function rules()
     {
-        return $this->belongsToMany(AchievementRule::class, 'achievement_achievement_rules')
+        return $this->belongsToMany(AchievementRule::class, 'achievement_rules')
             ->withTimestamps();
     }
 }

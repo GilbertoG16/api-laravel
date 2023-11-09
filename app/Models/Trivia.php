@@ -26,4 +26,18 @@ class Trivia extends Model
     {
         return $this->hasMany(Question::class);
     }
+
+    public function delete()
+    {
+        // Eliminar en cascada las respuestas asociadas
+        $this->questions->each(function ($question) {
+            $question->answers()->delete();
+        });
+    
+        // Eliminar en cascada las preguntas asociadas
+        $this->questions()->delete();
+    
+        parent::delete();
+    }
+    
 }

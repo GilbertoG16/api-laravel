@@ -32,6 +32,14 @@ class TriviaController extends Controller
     public function createTrivia(CreateTriviaRequest $request)
     {
         $data = $request->validated();
+
+        // Verificar si ya hay una trivia asociada al LearningInfo
+        $existingTrivia = Trivia::where('learning_info_id', $data['learning_info_id'])->first();
+
+        if ($existingTrivia) {
+            
+            return response()->json(['message' => 'Ya existe una trivia asociada a este LearningInfo'], 400);
+        }
     
         $trivia = Trivia::create([
             'name' => $data['name'],
@@ -292,6 +300,20 @@ class TriviaController extends Controller
         return response()->json(['message' => 'Respuestas guardadas exitosamente.', 'score'=> $score], 200);
     }
     
+    // Eliminación de la trivia basándonos en el id del Learning
+    public function destroy($triviaId)
+    {
+        $trivia = Trivia::find($triviaId);
+
+        if(!$trivia) {
+            return response()->json(['message'=> 'Trivia no encontrada 🐺']);
+        }
+
+        // Llamamos al método delete (Debería de eliminarse en cascada con el ELOQUENT)
+        $trivia->delete();
+
+        return response()->json(['message'=>'Se eliminó correctamente 🤬']);
+    } 
     
 
 }
