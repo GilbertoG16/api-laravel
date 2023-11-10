@@ -12,6 +12,7 @@ use App\Http\Resources\LearningInfoPaginateResource;
 use App\Models\LearningInfo;
 use App\Models\Location;
 use App\Models\QrInfoAssociation;
+use App\Models\UserQrHistory;
 use App\Models\TextAudio;
 use App\Models\Category;
 use App\Models\Image;
@@ -208,7 +209,16 @@ class LearningInfoController extends Controller
         }
         // Llamamos al que construye la ruta 
         $this->fileUploadController->deleteFolder($learningInfo);
-        // Eliminar las relaciones en cascada
+
+        // Obtener todas las asociaciones de QrInfoAssociation
+         $qrInfoAssociations = $learningInfo->qrInfoAssociations;
+            
+         // Eliminar en cascada todas las relaciones asociadas a QrInfoAssociation
+         foreach ($qrInfoAssociations as $association) {
+             $association->userQrHistories()->delete();
+             $association->delete();
+         }
+        // Eliminar las relaciones en cascada 
          $learningInfo->qrInfoAssociations()->delete();
          $learningInfo->videos()->delete();
          $learningInfo->images()->delete();
@@ -222,8 +232,6 @@ class LearningInfoController extends Controller
         return response()->json(['Message'=>'Se ha eliminado correctamente 😒'],200);    
     }
 
-
-    
         public function getQrInfoAssociations(Request $request)
     {
         $query = QrInfoAssociation::with(['location', 'learningInfo', 'userQrHistories']);
@@ -258,6 +266,35 @@ class LearningInfoController extends Controller
             'has_trivia' => $qrInfoAssociation->learningInfo->trivias()->exists(),
             'user_has_seen' => $qrInfoAssociation->userQrHistories->isNotEmpty(),
         ];
+    }
+    
+    public function getImages(Request $request)
+    {
+        $categories = $request->input('categories');
+    
+        if (!$categories || !is_array($categories)) {
+            return response()->json(['message' => 'Se requiere al menos una categoría.'], 400);
+        }
+    
+        $learningInfos = LearningInfo::whereIn('category_id', $categories)
+            ->with(['images', 'category'])
+            ->get();
+    
+        $categoryImages = [];
+    
+        foreach ($learningInfos as $learningInfo) {
+            $image = $learningInfo->images->first();
+    
+            if ($image) {
+                $categoryImages[$learningInfo->category->name][] = [
+                    'learning_info_id' => $learningInfo->id,
+                    'category_id' => $learningInfo->category_id,
+                    'image_url' => $image->image_url,
+                ];
+            }
+        }
+    
+        return response()->json($categoryImages);
     }
     
     
