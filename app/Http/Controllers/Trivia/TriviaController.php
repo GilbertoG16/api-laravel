@@ -32,6 +32,14 @@ class TriviaController extends Controller
     public function createTrivia(CreateTriviaRequest $request)
     {
         $data = $request->validated();
+
+        // Verificar si ya hay una trivia asociada al LearningInfo
+        $existingTrivia = Trivia::where('learning_info_id', $data['learning_info_id'])->first();
+
+        if ($existingTrivia) {
+            
+            return response()->json(['message' => 'Ya existe una trivia asociada a este LearningInfo'], 400);
+        }
     
         $trivia = Trivia::create([
             'name' => $data['name'],
@@ -292,6 +300,76 @@ class TriviaController extends Controller
         return response()->json(['message' => 'Respuestas guardadas exitosamente.', 'score'=> $score], 200);
     }
     
+    // Eliminación de la trivia basándonos en el id del Learning
+    public function destroy($triviaId)
+    {
+        $trivia = Trivia::find($triviaId);
+
+        if(!$trivia) {
+            return response()->json(['message'=> 'Trivia no encontrada 🐺']);
+        }
+
+        // Llamamos al método delete (Debería de eliminarse en cascada con el ELOQUENT)
+        $trivia->delete();
+
+        return response()->json(['message'=>'Se eliminó correctamente 🤬']);
+    }
+    
+    // Index de trivias
+    public function index(Request $request)
+    {
+        // Especifica la cantidad de trivias por página 
+        $perPage = $request->input('per_page', 10);
+    
+        // Obtén las trivias con paginación
+        $trivias = Trivia::paginate($perPage);
+    
+        // Construye la respuesta JSON
+        $response = $trivias->map(function ($trivia) {
+            return [
+                'id' => $trivia->id,
+                'name' => $trivia->name,
+                'description' => $trivia->description,
+                'learning_id' => $trivia->learning_info_id,
+            ];
+        });
+    
+        return response()->json(['trivias' => $response]);
+    }
+    
+    public function indexScore(Request $request)
+    {
+        // Obtén el ID de la trivia desde la solicitud
+        $triviaId = $request->query('trivia_id');
+    
+        // Construye la consulta base
+        $query = Score::query();
+    
+        // Si se proporciona un ID de trivia, aplica el filtro
+        if ($triviaId) {
+            $query->where('trivia_id', $triviaId);
+        }
+    
+        // Obtén los puntajes paginados
+        $scores = $query->paginate(10);
+    
+        // Respuesta JSON formateada
+        $formattedScores = $scores->map(function ($score) {
+            $userName = optional($score->user->profile)->name;
+            $userEmail = $score->user->email;
+            $scoreValue = $score->score;
+            $triviaName = $score->trivia->name;
+    
+            return [
+                'user_name' => $userName,
+                'user_email' => $userEmail,
+                'score' => $scoreValue,
+                'trivia_name' => $triviaName,
+            ];
+        });
+    
+        return response()->json(['scores' => $formattedScores]);
+    }
     
 
 }

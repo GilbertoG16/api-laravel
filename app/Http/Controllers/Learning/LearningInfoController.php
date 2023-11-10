@@ -12,6 +12,7 @@ use App\Http\Resources\LearningInfoPaginateResource;
 use App\Models\LearningInfo;
 use App\Models\Location;
 use App\Models\QrInfoAssociation;
+use App\Models\UserQrHistory;
 use App\Models\TextAudio;
 use App\Models\Category;
 use App\Models\Image;
@@ -197,4 +198,104 @@ class LearningInfoController extends Controller
         // Devovlemos una respuesta con éxito
         return response()->json(['message'=> 'Operación exitosa', 'learning_info'=> $learningInfo], 200);
     }
+
+    // Eliminación de Learning-Info :) 
+    public function destroy($id)
+    {
+        $learningInfo = LearningInfo::find($id);
+
+        if(!$learningInfo) {
+            return response()->json(['Message'=>'No se ha encontrado el Learning'],404);
+        }
+        // Llamamos al que construye la ruta 
+        $this->fileUploadController->deleteFolder($learningInfo);
+
+        // Obtener todas las asociaciones de QrInfoAssociation
+         $qrInfoAssociations = $learningInfo->qrInfoAssociations;
+            
+         // Eliminar en cascada todas las relaciones asociadas a QrInfoAssociation
+         foreach ($qrInfoAssociations as $association) {
+             $association->userQrHistories()->delete();
+             $association->delete();
+         }
+        // Eliminar las relaciones en cascada 
+         $learningInfo->qrInfoAssociations()->delete();
+         $learningInfo->videos()->delete();
+         $learningInfo->images()->delete();
+         $learningInfo->text_audios()->delete();
+         $learningInfo->events()->delete();
+         $learningInfo->trivias()->delete();
+
+         // Luego, eliminar el LearningInfo principal
+         $learningInfo->delete();
+
+        return response()->json(['Message'=>'Se ha eliminado correctamente 😒'],200);    
+    }
+
+        public function getQrInfoAssociations(Request $request)
+    {
+        $query = QrInfoAssociation::with(['location', 'learningInfo', 'userQrHistories']);
+
+        // Aplicar filtros según los parámetros de la solicitud
+        if ($request->has('has_trivia')) {
+            $query->has('learningInfo.trivias');
+        }
+
+        if ($request->has('user_has_seen')) {
+            $query->has('userQrHistories');
+        }
+
+        $qrInfoAssociations = $query->get();
+
+        // Mapear los datos según tus requisitos
+        $mappedData = $qrInfoAssociations->map(function ($qrInfoAssociation) {
+            return $this->mapQrInfoAssociation($qrInfoAssociation);
+        });
+
+        return response()->json(['data' => $mappedData]);
+    }
+    
+        private function mapQrInfoAssociation($qrInfoAssociation)
+    {
+        return [
+            'latitude' => $qrInfoAssociation->latitude,
+            'longitude' => $qrInfoAssociation->longitude,
+            'qr_identifier' => $qrInfoAssociation->qr_identifier,
+            'location_id' => $qrInfoAssociation->location_id,
+            'learning_info_id' => $qrInfoAssociation->learning_info_id,
+            'has_trivia' => $qrInfoAssociation->learningInfo->trivias()->exists(),
+            'user_has_seen' => $qrInfoAssociation->userQrHistories->isNotEmpty(),
+        ];
+    }
+    
+    public function getImages(Request $request)
+    {
+        $categories = $request->input('categories');
+    
+        if (!$categories || !is_array($categories)) {
+            return response()->json(['message' => 'Se requiere al menos una categoría.'], 400);
+        }
+    
+        $learningInfos = LearningInfo::whereIn('category_id', $categories)
+            ->with(['images', 'category'])
+            ->get();
+    
+        $categoryImages = [];
+    
+        foreach ($learningInfos as $learningInfo) {
+            $image = $learningInfo->images->first();
+    
+            if ($image) {
+                $categoryImages[$learningInfo->category->name][] = [
+                    'learning_info_id' => $learningInfo->id,
+                    'category_id' => $learningInfo->category_id,
+                    'image_url' => $image->image_url,
+                ];
+            }
+        }
+    
+        return response()->json($categoryImages);
+    }
+    
+    
 }
