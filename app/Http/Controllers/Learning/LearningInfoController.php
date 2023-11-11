@@ -17,6 +17,11 @@ use App\Models\Category;
 use App\Models\Image;
 use App\Models\Video;
 use App\Models\User;
+
+use App\Models\Achievement;
+use App\Models\UserAchievement;
+
+
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Learning\FileUploadController;
 use App\Http\Controllers\Learning\QrAssociationController;
@@ -25,6 +30,10 @@ use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\UserController;
 
 use Illuminate\Database\Eloquent\Model;
+
+use Illuminate\Support\Facades\DB;
+
+
 
 class LearningInfoController extends Controller
 {
@@ -62,50 +71,53 @@ class LearningInfoController extends Controller
         try {
             // Buscar la instancia de la tabla por qr_identifier
             $qrAssociation = QrInfoAssociation::where('qr_identifier', $qrIdentifier)->first();
-    
+            
             if (!$qrAssociation) {
                 // Si no se encuentra por qr_identifier, intenta buscar por id en el mismo LearningInfo
                 $learningInfo = LearningInfo::find($qrIdentifier);
     
                 if (!$learningInfo) {
+                    
                     return response()->json(['message' => 'No se encontró la asociación de QR'], 404);
                 }
-    
+
                 // Carga las relaciones en el LearningInfo
                 $learningInfo->load('images', 'videos', 'text_audios', 'qrInfoAssociations', 'trivias');
+                
             } else {
                 // Obtiene el LearningInfo correspondiente a la asociación de QR
                 $learningInfo = $qrAssociation->learningInfo;
-    
+                
                 if (!$learningInfo) {
                     return response()->json(['message' => 'No se encontró el LearningInfo correspondiente'], 404);
                 }
-    
+            
                 // Carga las relaciones en el LearningInfo
                 $learningInfo->load('images', 'videos', 'text_audios', 'qrInfoAssociations', 'trivias');
+                
             }
-    
+            
             // Relaciona el usuario con la asociación de QR si hay un usuario autenticado
             $user = auth('sanctum')->user();
+            
             if ($user && $qrAssociation && $qrAssociation->qr_identifier) {
                 $this->userController->relateUserWithQrAssociation($user->id, $qrAssociation);
                 // Verificamos si el usuario tiene permisos o si se requiere permisos para estar en este sitio
                 $locationId = $qrAssociation->location_id;
-
+                
                 // Llama a la función hasPermission
                 $hasPermission = $this->appointmentController->hasPermission($user, $locationId);
+                
             }
-    
             return new LearningInfoResourceOne($learningInfo);
         } catch (\Throwable $th) {
-            return response()->json([
+                return response()->json([
                 'success' => false,
                 'message' => 'Error al buscar la asociación ' . $th->getMessage(),
             ]);
         }
     }
     
-
     // Creación de un Learning/Algunas cosas se dividen en otros controladores como por ejemplo los files 
     public function create(LearningInfoRequest $request)
     {
@@ -196,5 +208,6 @@ class LearningInfoController extends Controller
         $this->qrAssociationController->updateQrAssociations($data['qr_associations'], $learningInfo);
         // Devovlemos una respuesta con éxito
         return response()->json(['message'=> 'Operación exitosa', 'learning_info'=> $learningInfo], 200);
+
     }
 }

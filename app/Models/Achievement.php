@@ -13,14 +13,14 @@ class Achievement extends Model
 
     public function users()
     {
-        return $this->belongsToMany(User::class, 'user_achievements')
+        return $this->belongsToMany(User::class, 'user_achievement')
             ->withPivot('unlocked_at')
             ->withTimestamps();
     }
 
     public function rules()
     {
-        return $this->belongsToMany(AchievementRule::class, 'achievement_achievement_rules')
+        return $this->belongsToMany(AchievementRule::class, 'achievement_rules')
             ->withTimestamps();
     }
 }
