@@ -14,7 +14,7 @@ use App\Models\Video;
 
 class FileUploadController extends Controller
 {
-
+    protected $firebaseStorageService;
     public function __construct(FirebaseStorageService $firebaseStorageService)
     {
         $this->firebaseStorageService = $firebaseStorageService;

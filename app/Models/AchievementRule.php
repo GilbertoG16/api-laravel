@@ -9,7 +9,7 @@ class AchievementRule extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'description','sql_condition'];
+    protected $fillable = ['achievement_id','name', 'description','sql_condition'];
 
     public function achievements()
     {
