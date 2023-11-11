@@ -246,30 +246,36 @@ class LearningInfoController extends Controller
         return response()->json(['Message'=>'Se ha eliminado correctamente 😒'],200);    
     }
 
-        public function getQrInfoAssociations(Request $request)
+    public function getQrInfoAssociations(Request $request)
     {
         $query = QrInfoAssociation::with(['location', 'learningInfo', 'userQrHistories']);
-
+    
         // Aplicar filtros según los parámetros de la solicitud
         if ($request->has('has_trivia')) {
             $query->has('learningInfo.trivias');
         }
-
+    
         if ($request->has('user_has_seen')) {
             $query->has('userQrHistories');
         }
-
+    
         $qrInfoAssociations = $query->get();
-
+    
+        // Contar el total de QR y los QR vistos por el usuario
+        $totalQr = QrInfoAssociation::count();
+        $userSeenQr = $qrInfoAssociations->filter(function ($qrInfoAssociation) {
+            return $qrInfoAssociation->userQrHistories->isNotEmpty();
+        })->count();
+    
         // Mapear los datos según tus requisitos
         $mappedData = $qrInfoAssociations->map(function ($qrInfoAssociation) {
             return $this->mapQrInfoAssociation($qrInfoAssociation);
         });
-
-        return response()->json(['data' => $mappedData]);
+    
+        return response()->json(['data' => $mappedData, 'total_qr' => $totalQr, 'user_seen_qr' => $userSeenQr]);
     }
     
-        private function mapQrInfoAssociation($qrInfoAssociation)
+    private function mapQrInfoAssociation($qrInfoAssociation)
     {
         return [
             'latitude' => $qrInfoAssociation->latitude,
@@ -277,6 +283,9 @@ class LearningInfoController extends Controller
             'qr_identifier' => $qrInfoAssociation->qr_identifier,
             'location_id' => $qrInfoAssociation->location_id,
             'learning_info_id' => $qrInfoAssociation->learning_info_id,
+            'name_learning' => $qrInfoAssociation->learningInfo->name,
+            'description_learning' => $qrInfoAssociation->learningInfo->description,
+            'category' => $qrInfoAssociation->learningInfo->category->id,
             'has_trivia' => $qrInfoAssociation->learningInfo->trivias()->exists(),
             'user_has_seen' => $qrInfoAssociation->userQrHistories->isNotEmpty(),
         ];
