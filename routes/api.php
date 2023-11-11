@@ -1,7 +1,5 @@
 <?php
 
-use App\Http\Controllers\Achievement\AchievementController;
-use App\Http\Controllers\Achievement\AchievementRulesController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
@@ -76,10 +74,6 @@ Route::middleware('auth:sanctum','verified', 'role:admin', 'status' )->group(fun
     Route::post('/admin/locations', [LocationController::class, 'store']);
     Route::put('/admin/locations/{id}', [LocationController::class, 'update']);
     Route::delete('/admin/locations/{id}', [LocationController::class, 'destroy']);
-
-    Route::post('/achievement', [AchievementController::class, 'create']);
-    Route::post('/achievementRules', [AchievementRulesController::class, 'create']);
-    Route::post('/assignAchievement', [AchievementController::class, 'assignAchievementToUser']);
 
     Route::post('/learning-info', [LearningInfoController::class, 'create']);
     Route::post('/learning-info/{id}', [LearningInfoController::class, 'update']);
