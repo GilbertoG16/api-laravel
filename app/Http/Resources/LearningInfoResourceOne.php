@@ -13,6 +13,10 @@ class LearningInfoResourceOne extends JsonResource
             'name' => $this->name,
             'description' => $this->description,
             'category_id' => $this->category_id,
+            'category'=>$this->category
+            ?[
+                'name_category'=> $this->category->name,
+            ] :null,
             'images' => $this->images
                 ? $this->images->map(function ($image) {
                     return [
