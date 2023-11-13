@@ -14,7 +14,7 @@ use App\Models\Video;
 
 class FileUploadController extends Controller
 {
-
+   
     public function __construct(FirebaseStorageService $firebaseStorageService)
     {
         $this->firebaseStorageService = $firebaseStorageService;
@@ -141,13 +141,5 @@ class FileUploadController extends Controller
       protected function getStorageFolder(LearningInfo $learningInfo, $fileType)
     {
         return "learning/{$learningInfo->id}/{$fileType}/";
-    }
-
-    public function deleteFolder($learningInfo)
-    {
-        // Construimos la ruta de la carpeta en Firebase Storage
-        $folderPath = 'learning/'.$learningInfo->id;
-
-        $this->firebaseStorageService->deleteFolderInFirebaseStorage($folderPath);
     }
 }
