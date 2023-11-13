@@ -8,11 +8,52 @@ use Illuminate\Http\Request;
 use App\Models\Location;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
+use Kreait\Firebase\Messaging\Message;
+use Kreait\Firebase\Messaging\Notification;
+use Kreait\Laravel\Firebase\Facades\Firebase;
 
 use App\Http\Requests\Appointment\AppointmentRequest;
 
 class AppointmentController extends Controller
 {
+    public function index(Request $request)
+    {
+        $perPage = $request->input('per_page', 10); // Número de resultados por página
+        $page = $request->input('page', 1); // Página actual
+        $date = $request->input('date', null); // Fecha para la paginación, en formato 'Y-m-d'
+    
+        $query = UnauthorizedAccess::query();
+    
+        // Filtrar por fecha si se proporciona
+        if ($date) {
+            $query->whereDate('created_at', $date);
+        }
+    
+        // Obtener la lista de fechas únicas disponibles
+        $uniqueDates = UnauthorizedAccess::query()
+            ->select('created_at')
+            ->groupBy('created_at')
+            ->orderBy('created_at', 'desc')
+            ->pluck('created_at');
+    
+        // Formatear las fechas únicas con Carbon
+        $formattedUniqueDates = $uniqueDates->map(function ($date) {
+            return \Carbon\Carbon::parse($date)->format('Y-m-d'); // Puedes personalizar el formato según tus preferencias
+        });
+    
+        // Paginar los resultados por fecha, ordenándolos por 'updated_at'
+        $unauthorizedAccess = $query->orderBy('updated_at', 'desc') // Cambiar a 'updated_at'
+            ->paginate($perPage, ['*'], 'page', $page);
+    
+        // Extraer solo los datos esenciales y las fechas formateadas
+        $essentialData = [
+            'data' => $unauthorizedAccess->items(),
+            'unique_dates' => $formattedUniqueDates,
+        ];
+    
+        return response()->json($essentialData);
+    }
+    
     public function create(AppointmentRequest $request)
     {
         //Validamos la fecha y la ubicación 
@@ -51,7 +92,6 @@ class AppointmentController extends Controller
         ]);
 
         return response()->json(['message' => 'Cita creada con éxito.'], 200);
-    
     }
 
     public function hasPermission($user, $locationId)
@@ -59,72 +99,50 @@ class AppointmentController extends Controller
         // Verificamos si la ubicación requiere permiso
         $location = Location::find($locationId);
     
-        if ($location && $location->permission_required) {
-            // Verificamos si el usuario tiene permisos confirmados
-            $confirmedPermissions = Appointment::where('location_id', $locationId)
-                ->where('user_id', $user->id)
-                ->where('is_confirmed', true)
-                ->count();
+        if (!$location || !$location->permission_required) {
+            // Si la ubicación no requiere permiso, se asume que el usuario tiene permiso
+            return true;
+        }
     
-            Log::info("Confirmed Permissions: " . $confirmedPermissions);
+        // Obtiene la fecha actual
+        $currentDateTime = Carbon::now();
+        $currentDate = $currentDateTime->toDateString();
     
-            if ($confirmedPermissions > 0) {
-                // El usuario tiene permisos confirmados, ahora verificamos si la cita ha caducado
-                $currentDateTime = Carbon::now();
+        // Buscar el registro UnauthorizedAccess para el día actual y el usuario
+        $existingUnauthorizedAccess = UnauthorizedAccess::where('user_id', $user->id)
+            ->where('location_id', $locationId)
+            ->whereDate('created_at', $currentDate)
+            ->first();
     
-                // Obtener la cita más cercana en el tiempo para este usuario y esta ubicación
-                $nextAppointment = Appointment::where('location_id', $locationId)
-                    ->where('user_id', $user->id)
-                    ->where('is_confirmed', true)
-                    ->where('end_time', '>', $currentDateTime)
-                    ->orderBy('start_time', 'asc')
-                    ->first();
+        // Verificar si el usuario tiene al menos una cita confirmada en la ubicación que coincide con las horas permitidas
+        $confirmedPermissions = Appointment::where('location_id', $locationId)
+            ->where('user_id', $user->id)
+            ->where('is_confirmed', true)
+            ->where('start_time', '<=', $currentDateTime)
+            ->where('end_time', '>=', $currentDateTime)
+            ->count();
+        
+        if ($confirmedPermissions > 0) {
+            // El usuario tiene al menos una cita confirmada en la ubicación dentro del rango de tiempo permitido
+            return true; // Tiene permiso
+        }
     
-                Log::info("Next Appointment: " . json_encode($nextAppointment));
-    
-                if (!$nextAppointment) {
-                    // No hay citas futuras confirmadas para este usuario en esta ubicación
-                    Log::info("Unauthorized Access Created");
-                    UnauthorizedAccess::create([
-                        'user_id' => $user->id,
-                        'location_id' => $locationId,
-                    ]);
-    
-                    return false; // No tiene permiso
-                }
-    
-                // Verificar si la próxima cita ha caducado
-                if ($currentDateTime->greaterThanOrEqualTo($nextAppointment->start_time)) {
-                    // La cita ha caducado, el usuario no tiene acceso
-                    Log::info("Unauthorized Access Created");
-                    UnauthorizedAccess::create([
-                        'user_id' => $user->id,
-                        'location_id' => $locationId,
-                
-                    ]);
-    
-                    return false; // No tiene permiso
-                }
-    
-                // La cita no ha caducado, el usuario tiene acceso
-                return true;
-            }
-    
-            // El usuario no tiene permisos confirmados, registrar como Unauthorized Access
-            Log::info("Unauthorized Access Created");
-            UnauthorizedAccess::create([
-                'user_id' => $user->id,
-                'location_id' => $locationId,
-            ]);
-    
+        if ($existingUnauthorizedAccess) {
+            // Si existe un registro UnauthorizedAccess, actualiza su 'updated_at' a la hora actual
+            $existingUnauthorizedAccess->update(['updated_at' => $currentDateTime]);
             return false; // No tiene permiso
         }
     
-        // Si la ubicación no requiere permiso, se asume que el usuario tiene permiso
-        return true;
+        // Si no existe un registro UnauthorizedAccess, créalo para el usuario y la ubicación
+        UnauthorizedAccess::create([
+            'user_id' => $user->id,
+            'location_id' => $locationId,
+            'created_at' => $currentDateTime,
+            'updated_at' => $currentDateTime,
+        ]);
+    
+        return false; // No tiene permiso
     }
-    
-    
     
     // Conceder acceso
     public function confirmAccess($appointmentId)

@@ -58,5 +58,17 @@ class FirebaseStorageService
 
         return null;
     }
+
+    public function deleteFolderInFirebaseStorage($folderPath)
+    {
+        // Eliminar la carpeta completa en Firebase Storage
+        $firebaseStorage = Firebase::storage();
+        $bucket = $firebaseStorage->getBucket();
+
+        $objects = $bucket->objects(['prefix' => $folderPath]);
+        foreach ($objects as $object) {
+            $object->delete();
+        }
+    }
     
 }
