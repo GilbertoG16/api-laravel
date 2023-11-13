@@ -13,6 +13,8 @@ return new class extends Migration
     {
         Schema::create('achievement_rules', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('achievement_id');
+            $table->foreign('achievement_id')->references('id')->on('achievements');
             $table->string('name');
             $table->text('description');
             $table->text('sql_condition');

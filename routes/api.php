@@ -9,6 +9,9 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\FcmTokenController;
 use App\Http\Controllers\EntryController;
 
+use App\Http\Controllers\Achievement\AchievementController;
+use App\Http\Controllers\Achievement\AchievementRulesController;
+
 use App\Http\Controllers\AppointmentController;
 
 use App\Http\Controllers\UserQrHistoryController;
@@ -80,6 +83,10 @@ Route::middleware('auth:sanctum','verified', 'role:admin', 'status' )->group(fun
     Route::post('/admin/locations', [LocationController::class, 'store']);
     Route::put('/admin/locations/{id}', [LocationController::class, 'update']);
     Route::delete('/admin/locations/{id}', [LocationController::class, 'destroy']);
+
+    Route::post('/achievement', [AchievementController::class, 'create']);
+    Route::post('/achievementRules', [AchievementRulesController::class, 'create']);
+    Route::post('/assignAchievement', [AchievementController::class, 'assignAchievementToUser']);
 
     Route::post('/learning-info', [LearningInfoController::class, 'create']);
     Route::post('/learning-info/{id}', [LearningInfoController::class, 'update']);
