@@ -10,12 +10,19 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
 use Kreait\Firebase\Messaging\Message;
 use Kreait\Firebase\Messaging\Notification;
+use Kreait\Firebase\Messaging\CloudMessage;
 use Kreait\Laravel\Firebase\Facades\Firebase;
 
 use App\Http\Requests\Appointment\AppointmentRequest;
 
 class AppointmentController extends Controller
 {
+    protected $notification;
+
+    public function __construct()
+    {
+        $this->notification = Firebase::messaging();
+    }
     public function index(Request $request)
     {
         $perPage = $request->input('per_page', 10); // Número de resultados por página
@@ -147,18 +154,61 @@ class AppointmentController extends Controller
     // Conceder acceso
     public function confirmAccess($appointmentId)
     {
-        $appointmentId = Appointment::find($appointmentId);
-
-        if(!$appointmentId) {
-            return response()->json(['error'=>'Cita no encontrada'],404);
-        }
-
-        // Confirmamos el acceso actualizando el estado de is_confirmed 
-        $appointmentId->is_confirmed = true;
-        $appointmentId->save();
-
-        return response()->json(['message'=>'Acceso confirmado'], 200);
-    }
-
+        $appointment = Appointment::find($appointmentId);
     
+        if (!$appointment) {
+            return response()->json(['error' => 'Cita no encontrada'], 404);
+        }
+    
+        // Verificar si la cita ya está confirmada
+        if ($appointment->is_confirmed) {
+            return response()->json(['message' => 'Esta cita ya está confirmada'], 200);
+        }
+    
+        // Confirmamos el acceso actualizando el estado de is_confirmed 
+        $appointment->is_confirmed = true;
+        $appointment->save();
+    
+        // Obtenemos detalles relevantes de la cita
+        $location = Location::find($appointment->location_id);
+        $userId = $appointment->user_id;
+    
+        // Verificar si el usuario tiene un token FCM
+        $user = User::find($userId);
+        $fcmTokens = $user->fcmTokens;
+    
+        if ($fcmTokens->isNotEmpty()) {
+            // Enviar la notificación
+            foreach ($fcmTokens as $fcmToken) {
+                $this->sendConfirmationNotification($fcmToken->token, $location, $appointment);
+            }
+        }
+    
+        return response()->json(['message' => 'Acceso confirmado'], 200);
+    }
+    
+    
+    // Función para enviar la notificación de confirmación
+    public function sendConfirmationNotification($fcmToken, $location, $appointment)
+    {
+        // Convertir las horas a formato de 12 horas
+        $startTime12H = Carbon::parse($appointment->start_time)->format('g:i A');
+        $endTime12H = Carbon::parse($appointment->end_time)->format('g:i A');
+    
+        // Construir el mensaje de notificación
+        $title = 'Confirmación de cita';
+        $body = "Se confirma tu ida al sendero desde {$startTime12H} hasta {$endTime12H} en {$location->name}.";
+    
+        // Construir el mensaje
+        $message = CloudMessage::fromArray([
+            'token' => $fcmToken,
+            'notification' => [
+                'title' => $title,
+                'body' => $body,
+            ],
+        ]);
+    
+        // Enviar la notificación
+        $this->notification->send($message);
+    } 
 }
