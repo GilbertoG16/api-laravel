@@ -77,26 +77,26 @@ class AchievementController extends Controller
         if ($achievementRule) {
             $sqlCondition = $achievementRule->sql_condition;
     // Ejecutar la consulta SQL con marcadores de posición
-    $result = DB::select($sqlCondition, [$user->id, $qr_info_association_id]);
-    if (count($result) === 1 && isset($result[0]->{'COUNT(*)'})) {
-        $count = (int) $result[0]->{'COUNT(*)'};
-        if ($count === 1) {
-                $existingUserAchievement = UserAchievement::where('user_id', $user->id)
-                    ->where('achievement_id', $achievement->id)
-                    ->first();
-                if ($existingUserAchievement) {
-                    return response()->json(['message' => 'El usuario ya tiene el logro'], 200);
-                } else {
-                    // El usuario no tiene el logro, asígnalo
-                    $userAchievement = new UserAchievement([
-                        'user_id' => $user->id,
-                        'achievement_id' => $achievement->id,
-                        // Otros campos relacionados con los logros
-                    ]);
-                    $userAchievement->save();
-                    return response()->json(['message' => 'Logro asignado al usuario', 'userAchievement' => $userAchievement], 200);
+        $result = DB::select($sqlCondition, [$user->id, $qr_info_association_id]);
+        if (count($result) === 1 && isset($result[0]->{'COUNT(*)'})) {
+            $count = (int) $result[0]->{'COUNT(*)'};
+            if ($count === 1) {
+                    $existingUserAchievement = UserAchievement::where('user_id', $user->id)
+                        ->where('achievement_id', $achievement->id)
+                        ->first();
+                    if ($existingUserAchievement) {
+                        return response()->json(['message' => 'El usuario ya tiene el logro'], 200);
+                    } else {
+                        // El usuario no tiene el logro, asígnalo
+                        $userAchievement = new UserAchievement([
+                            'user_id' => $user->id,
+                            'achievement_id' => $achievement->id,
+                            // Otros campos relacionados con los logros
+                        ]);
+                        $userAchievement->save();
+                        return response()->json(['message' => 'Logro asignado al usuario', 'userAchievement' => $userAchievement], 200);
+                    }
                 }
-        }
             }
         }
         return response()->json(['message' => 'No se cumple ninguna condición para asignar un logro'], 200);
