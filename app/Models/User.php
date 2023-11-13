@@ -92,5 +92,9 @@ class User extends Authenticatable implements MustVerifyEmail
             ->withPivot('unlocked_at')
             ->withTimestamps();
     }
+    public function fcmTokens()
+    {
+        return $this->hasMany(FcmToken::class);
+    }
 
 }

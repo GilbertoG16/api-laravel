@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Learning\LearningInfoController;
 use App\Http\Controllers\SuperAdminController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\FcmTokenController;
 use App\Http\Controllers\EntryController;
 
 use App\Http\Controllers\AppointmentController;
@@ -42,10 +43,12 @@ Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 Route::get('/learning-info/{qrIdentifier}', [LearningInfoController::class, 'findByQrIdentifier']);
 Route::get('/learning-info', [LearningInfoController::class, 'index']);
+Route::get('/all-learnings-with-images', [LocationController::class, 'getAllLearningsWithImages']);
 
 Route::get('/university-sites', [LearningInfoController::class, 'universitySites']);
 Route::get('/get-images', [LearningInfoController::class, 'getImages']);
 Route::middleware('auth:sanctum', 'verified', 'status')->group(function () {
+    Route::post('/store-fcm-token', [FcmTokenController::class, 'storeFcmToken']);
     Route::get('/profile', [UserController::class, 'userProfile']);
     Route::post('/logout', [AuthController::class, 'logout']);
 
@@ -87,7 +90,7 @@ Route::middleware('auth:sanctum','verified', 'role:admin', 'status' )->group(fun
     Route::post('/learning-info', [LearningInfoController::class, 'create']);
     Route::post('/learning-info/{id}', [LearningInfoController::class, 'update']);
     Route::delete('/learning-info/{id}', [LearningInfoController::class, 'destroy']);
-
+    /* Route::post('/sendMessage', [FcmTokenController::class, 'sendNotification']); */ //Ejemplo de mandar notificación
     Route::post('/appointments/user/{id}', [AppointmentController::class, 'confirmAccess']);
     Route::get('/appointments/user', [AppointmentController::class, 'index']);
 
