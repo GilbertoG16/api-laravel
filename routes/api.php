@@ -1,7 +1,5 @@
 <?php
 
-use App\Http\Controllers\Achievement\AchievementController;
-use App\Http\Controllers\Achievement\AchievementRulesController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
@@ -10,6 +8,9 @@ use App\Http\Controllers\SuperAdminController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\FcmTokenController;
 use App\Http\Controllers\EntryController;
+
+use App\Http\Controllers\Achievement\AchievementController;
+use App\Http\Controllers\Achievement\AchievementRulesController;
 
 use App\Http\Controllers\AppointmentController;
 
@@ -50,6 +51,7 @@ Route::get('/get-images', [LearningInfoController::class, 'getImages']);
 Route::middleware('auth:sanctum', 'verified', 'status')->group(function () {
     Route::post('/store-fcm-token', [FcmTokenController::class, 'storeFcmToken']);
     Route::get('/profile', [UserController::class, 'userProfile']);
+    Route::get('/UserAchivement',[UserController::class, 'getUserAchievements']);
     Route::post('/logout', [AuthController::class, 'logout']);
 
     Route::get('/ranking', [TriviaController::class, 'indexScore']);

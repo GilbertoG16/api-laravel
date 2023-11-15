@@ -10,18 +10,19 @@ use App\Http\Requests\PhotoUpload;
 use App\Http\Requests\UpdateProfile; 
 use App\Models\QrInfoAssociation;
 use App\Models\UserQrHistory;
-
+use App\Http\Controllers\Achievement\AchievementController;
 use App\Services\FirebaseStorageService;
-
-
+use App\Http\Controllers\Achievement\AchievementRulesController;
+use App\Models\UserAchievement;
 class UserController extends Controller
 {
 
     protected $firebaseStorageService;
-
-    public function __construct(FirebaseStorageService $firebaseStorageService)
+    protected $achievementController;
+    public function __construct(FirebaseStorageService $firebaseStorageService, AchievementController $achievementController)
     {
         $this->firebaseStorageService = $firebaseStorageService;
+        $this->achievementController = $achievementController;
     }
 
     public function index(){
@@ -92,14 +93,28 @@ class UserController extends Controller
         try {
             // Obtener el usuario
             $user = User::findOrFail($userId);
-    
+            
+            //Obtener si ha escaneado el codigo anterioramnete
+            $previouslyScanned = UserQrHistory::where('user_id', $user)
+            ->where('qr_info_association_id', $qrAssociation->id)
+            ->exists();
             // Relacionar el usuario con la asociación de QR
             $userQrHistory = new UserQrHistory([
                 'qr_info_association_id' => $qrAssociation->id,
             ]);
-    
+
+            //Si no ha escaneado se le asigna el logro
+            if (!$previouslyScanned) {
+                // El usuario no ha escaneado este QR anteriormente, asignar el logro
+                
+                $this->achievementController->assignAchievement($user, 2);
+                
+            }else{
+                
+            }
+            
             $user->userQrHistories()->save($userQrHistory);
-    
+            
             return response()->json(['message' => 'Usuario relacionado con la asociación de QR exitosamente 😎'], 200);
         } catch (\Throwable $th) {
             return response()->json([
@@ -129,7 +144,31 @@ class UserController extends Controller
     
         return response()->json($response);
     }
-    
+    public function getUserAchievements(Request $request)
+    {
+        $user = auth()->user(); // Obtén el usuario autenticado
+        $perPage = $request->get('per_page', 10); // Número de logros por página
+
+        // Obtén los logros del usuario con la relación de logro pre-cargada y paginación
+        $userAchievements = UserAchievement::where('user_id', $user->id)
+            ->with('achievement') // Cargar información del logro relacionado
+            ->paginate($perPage);
+
+        // Estructura la respuesta en un arreglo limpio
+        $achievementsData = $userAchievements->map(function ($userAchievement) {
+            return [
+                'achievement_id' => $userAchievement->achievement_id,
+                'achievement_name' => $userAchievement->achievement->name,
+                'achievement_description' => $userAchievement->achievement->description,
+                'photo_url' => $userAchievement->achievement->photo_url, // Ajusta la clave de la foto aquí
+                // Otros campos de logros si los hay
+            ];
+        });
+
+        return response()->json(['user_achievements' => $achievementsData], 200);
+    }
+
+
     
     
     

@@ -1,9 +1,6 @@
 <?php
-
 namespace App\Http\Requests\Achievement;
-
 use Illuminate\Foundation\Http\FormRequest;
-
 class AchievementRulesRequest extends FormRequest
 {
     /**
@@ -13,7 +10,6 @@ class AchievementRulesRequest extends FormRequest
     {
         return true;
     }
-
     /**
      * Get the validation rules that apply to the request.
      *
@@ -29,3 +25,4 @@ class AchievementRulesRequest extends FormRequest
         ];
     }
 }
+?>

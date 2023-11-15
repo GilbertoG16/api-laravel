@@ -142,12 +142,4 @@ class FileUploadController extends Controller
     {
         return "learning/{$learningInfo->id}/{$fileType}/";
     }
-
-    public function deleteFolder($learningInfo)
-    {
-        // Construimos la ruta de la carpeta en Firebase Storage
-        $folderPath = 'learning/'.$learningInfo->id;
-
-        $this->firebaseStorageService->deleteFolderInFirebaseStorage($folderPath);
-    }
 }
