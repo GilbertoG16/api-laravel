@@ -51,6 +51,7 @@ Route::get('/get-images', [LearningInfoController::class, 'getImages']);
 Route::middleware('auth:sanctum', 'verified', 'status')->group(function () {
     Route::post('/store-fcm-token', [FcmTokenController::class, 'storeFcmToken']);
     Route::get('/profile', [UserController::class, 'userProfile']);
+    Route::get('/UserAchivement',[UserController::class, 'getUserAchievements']);
     Route::post('/logout', [AuthController::class, 'logout']);
 
     Route::get('/ranking', [TriviaController::class, 'indexScore']);

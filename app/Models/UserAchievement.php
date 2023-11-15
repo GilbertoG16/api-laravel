@@ -14,5 +14,9 @@ class UserAchievement extends Model
     {
         return $this->belongsTo(User::class);
     }
+    public function achievement()
+    {
+        return $this->belongsTo(Achievement::class, 'achievement_id');
+    }
 }
 ?>

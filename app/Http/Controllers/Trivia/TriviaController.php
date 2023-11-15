@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Trivia;
 
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\FileUploadController;
+use App\Http\Controllers\AchievementController;
 use App\Http\Requests\Trivia\CreateTriviaRequest;
 use App\Http\Requests\Trivia\UpdateTriviaRequest;
 use App\Http\Requests\SubmitAnswersRequest;
@@ -13,6 +14,8 @@ use App\Models\Question;
 use App\Models\Trivia;
 use App\Models\UserAnswers;
 use App\Models\Score;
+use App\Models\Achievement;
+use App\Models\UserAchievement;
 use App\Services\FirebaseStorageService;
 use Kreait\Firebase\ServiceAccount;
 use Kreait\Firebase\Factory;
@@ -257,7 +260,7 @@ class TriviaController extends Controller
     
         // Calcula el puntaje (5 puntos por respuesta correcta)
         $score = 0;
-    
+        $maxScore = 25; 
         // Asume que las respuestas están en $data['answers']
         foreach ($data['answers'] as $answer) {
             $answerModel = Answer::find($answer['answer_id']);
@@ -296,7 +299,27 @@ class TriviaController extends Controller
         }
     
         $userScore->save();
+        if ($score === $maxScore) {
+            // Encuentra el logro relacionado con el puntaje máximo en la base de datos
+            
+                // Verifica si el usuario ya tiene este logro
+                $existingUserAchievement = UserAchievement::where('user_id', $user->id)
+                    ->where('achievement_id', 4)
+                    ->first();
     
+                if (!$existingUserAchievement) {
+                    // El usuario no tiene el logro, asígnalo
+                    $userAchievement = new UserAchievement([
+                        'user_id' => $user->id,
+                        'achievement_id' => 4,
+                        // Otros campos relacionados con los logros
+                    ]);
+                    $userAchievement->save();
+                    return response()->json(['message' => 'Se le asignó el logro.'], 200);
+                    // Si deseas, podrías retornar una respuesta JSON indicando que se asignó el logro al usuario
+                }
+            }
+        
         return response()->json(['message' => 'Respuestas guardadas exitosamente.', 'score'=> $score], 200);
     }
     
