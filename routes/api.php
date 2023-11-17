@@ -53,7 +53,8 @@ Route::middleware('auth:sanctum', 'verified', 'status')->group(function () {
     Route::get('/profile', [UserController::class, 'userProfile']);
     Route::get('/UserAchivement',[UserController::class, 'getUserAchievements']);
     Route::post('/logout', [AuthController::class, 'logout']);
-
+    Route::get('/user/appointments', [AppointmentController::class, 'getUserAppointments']);
+    Route::delete('/user/appointments/{id}', [AppointmentController::class, 'cancelUserAppointment']);
     Route::get('/ranking', [TriviaController::class, 'indexScore']);
 
     Route::get('/user/getAllQRInfo', [LearningInfoController::class, 'getQrInfoAssociations']);

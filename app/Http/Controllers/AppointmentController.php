@@ -60,47 +60,117 @@ class AppointmentController extends Controller
     
         return response()->json($essentialData);
     }
-    
-    public function create(AppointmentRequest $request)
+    public function getUserAppointments()
     {
-        //Validamos la fecha y la ubicación 
-        
-        // Obtenemos el usuario 
+        // Obtener el usuario autenticado
         $user = auth()->user();
-
-        // Obtener el start_time proporcionado por el usuario
-        $start_time = $request->input('start_time');
-
-        // Calcular el end_time sumando las horas definidas en el .env
-        $appointmentIntervalHours = env('APPOINTMENT_INTERVAL_HOURS', 2);
-        $end_time = Carbon::parse($start_time)->addHours($appointmentIntervalHours);
-
-        // Obtener el número de citas en el mismo lugar y rango de tiempo
-        $locationId = $request->input('location_id');
-        $countAppointments = Appointment::where('location_id', $locationId)
-            ->where('start_time', '<', $end_time)
-            ->where('end_time', '>', $start_time)
-            ->count();
-           
-        // Obtener la cantidad máxima de personas permitidas del .env
-        $maxPeoplePerInterval = env('MAX_PEOPLE_PER_INTERVAL', 15);
-
-        if ($countAppointments >= $maxPeoplePerInterval) {
-            return response()->json(['error' => 'No hay disponibilidad en ese horario.'], 400);
+    
+        // Obtener las citas del usuario ordenadas por la fecha de inicio
+        $userAppointments = $user->appointments()
+            ->orderBy('start_time', 'asc')
+            ->get()
+            ->map(function ($appointment) {
+                // Formatear la fecha y hora a un formato de 12 horas
+                $appointment->start_time = Carbon::parse($appointment->start_time)->format('Y-m-d h:i:s A');
+                $appointment->end_time = Carbon::parse($appointment->end_time)->format('Y-m-d h:i:s A');
+                return $appointment;
+            });
+    
+        // Retornar las citas del usuario en formato JSON con fechas en formato de 12 horas
+        return response()->json(['appointments' => $userAppointments], 200);
+    }
+    public function cancelUserAppointment($id)
+    {
+        // Obtener el usuario autenticado
+        $user = auth()->user();
+    
+        // Buscar la cita que el usuario intenta cancelar
+        $appointment = $user->appointments()->find($id);
+    
+        // Verificar si la cita existe para ese usuario
+        if (!$appointment) {
+            return response()->json(['error' => 'La cita no existe o no pertenece a este usuario.'], 404);
         }
-
-        // Crear la cita
-        Appointment::create([
-            'start_time' => $start_time,
-            'end_time' => $end_time,
-            'user_id' => $user->id,
-            'location_id' => $locationId,
-            'is_confirmed' => false,
-        ]);
-
-        return response()->json(['message' => 'Cita creada con éxito.'], 200);
+    
+        // Cancelar la cita eliminándola de la base de datos
+        $appointment->delete();
+    
+        return response()->json(['message' => 'Cita cancelada correctamente.'], 200);
     }
 
+    public function create(AppointmentRequest $request)
+    {
+        // Obtener el usuario autenticado
+        $user = auth()->user();
+    
+        // Obtener el start_time proporcionado por el usuario
+        $start_time = Carbon::parse($request->input('start_time'));
+        $locationId = $request->input('location_id');
+    
+        // Verificar si se requiere cita para esta ubicación
+        $location = Location::find($locationId);
+        if ($location && $location->permission_required) {
+            // Validar si la fecha ingresada es anterior al día actual
+            $today = now()->startOfDay();
+            $selectedDate = $start_time->copy()->startOfDay();
+    
+            if ($selectedDate < $today) {
+                return response()->json(['error' => 'La fecha seleccionada ya pasó.'], 400);
+            }
+    
+            // Validar si el horario seleccionado está dentro del rango permitido (7 am - 4 pm)
+            $startTime = $start_time->copy()->startOfDay()->addHours(7);
+            $endTime = $start_time->copy()->startOfDay()->addHours(16);
+    
+            if ($start_time < $startTime || $start_time > $endTime) {
+                return response()->json(['error' => 'El horario permitido es de 7 am a 4 pm.'], 400);
+            }
+    
+            // Calcular el end_time sumando las horas definidas en el .env
+            $appointmentIntervalHours = env('APPOINTMENT_INTERVAL_HOURS', 2);
+            $end_time = $start_time->copy()->addHours($appointmentIntervalHours);
+    
+            // Obtener el número de citas en el mismo lugar y rango de tiempo
+            $countAppointments = Appointment::where('location_id', $locationId)
+                ->where('start_time', '<', $end_time)
+                ->where('end_time', '>', $start_time)
+                ->count();
+    
+            // Obtener la cantidad máxima de personas permitidas del .env
+            $maxPeoplePerInterval = env('MAX_PEOPLE_PER_INTERVAL', 15);
+    
+            if ($countAppointments >= $maxPeoplePerInterval) {
+                return response()->json(['error' => 'No hay disponibilidad en ese horario.'], 400);
+            }
+    
+            // Verificar la cantidad de citas para la semana actual
+            $userAppointmentsThisWeek = $user->appointments()
+                ->whereYear('start_time', $start_time->year)
+                ->where('start_time', '>=', $start_time->copy()->startOfWeek()) // Comenzar la semana actual
+                ->where('start_time', '<=', $start_time->copy()->endOfWeek()) // Finalizar la semana actual
+                ->count();
+    
+            // Verificar si ya hay una cita esta semana
+            if ($userAppointmentsThisWeek > 0) {
+                return response()->json(['error' => 'Solo puedes tener una cita por semana.'], 400);
+            }
+    
+            // Crear la cita
+            Appointment::create([
+                'start_time' => $start_time,
+                'end_time' => $end_time,
+                'user_id' => $user->id,
+                'location_id' => $locationId,
+                'is_confirmed' => false,
+            ]);
+    
+            return response()->json(['message' => 'Cita creada con éxito.'], 200);
+        } else {
+            return response()->json(['message' => 'No necesita cita para ir a este sitio.'], 200);
+        }
+    }
+    
+    
     public function hasPermission($user, $locationId)
     {
         // Verificamos si la ubicación requiere permiso

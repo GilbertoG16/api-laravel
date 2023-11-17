@@ -108,6 +108,7 @@ class LocationController extends Controller
                 'location' => [
                     'id' => $location->id,
                     'name' => $location->name,
+                    'description' =>$location->description,
                     'images' => $uniqueImages,
                 ],
             ];
