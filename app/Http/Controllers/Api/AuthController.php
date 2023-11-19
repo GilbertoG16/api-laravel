@@ -72,6 +72,14 @@ public function login(Request $request) {
         ], 401);
     }
 
+     // Obtenemos el perfil del usuario
+     $profile = $user->profile;
+
+     // Si el usuario no tiene un perfil, creamos uno 
+     if(!$profile) {
+         $profile = $user->profile()->create([]);
+     }
+
     $token = $user->createToken('token')->plainTextToken;
 
     $cookie = cookie('jwt', $token, 60 * 24);
