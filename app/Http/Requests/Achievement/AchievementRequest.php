@@ -20,6 +20,7 @@ class AchievementRequest extends FormRequest
     public function rules()
     {
         return [
+            'id' => 'required|integer',
             'name' => 'required|string',
             'description' => 'required|string',
             'image' => 'required|image|mimes:jpeg,png',

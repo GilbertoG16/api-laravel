@@ -109,10 +109,7 @@ class UserController extends Controller
                 
                 $this->achievementController->assignAchievement($user, 2);
                 
-            }else{
-                
             }
-            
             $user->userQrHistories()->save($userQrHistory);
             
             return response()->json(['message' => 'Usuario relacionado con la asociación de QR exitosamente 😎'], 200);
@@ -147,12 +144,11 @@ class UserController extends Controller
     public function getUserAchievements(Request $request)
     {
         $user = auth()->user(); // Obtén el usuario autenticado
-        $perPage = $request->get('per_page', 10); // Número de logros por página
 
-        // Obtén los logros del usuario con la relación de logro pre-cargada y paginación
+        // Obtén los logros del usuario autenticado con la relación de logro pre-cargada y paginación
         $userAchievements = UserAchievement::where('user_id', $user->id)
             ->with('achievement') // Cargar información del logro relacionado
-            ->paginate($perPage);
+            ->paginate($request->get('per_page', 10)); // Número de logros por página
 
         // Estructura la respuesta en un arreglo limpio
         $achievementsData = $userAchievements->map(function ($userAchievement) {
@@ -167,9 +163,4 @@ class UserController extends Controller
 
         return response()->json(['user_achievements' => $achievementsData], 200);
     }
-
-
-    
-    
-    
 }

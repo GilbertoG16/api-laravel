@@ -304,14 +304,14 @@ class TriviaController extends Controller
             
                 // Verifica si el usuario ya tiene este logro
                 $existingUserAchievement = UserAchievement::where('user_id', $user->id)
-                    ->where('achievement_id', 4)
+                    ->where('achievement_id', 1)
                     ->first();
     
                 if (!$existingUserAchievement) {
                     // El usuario no tiene el logro, asígnalo
                     $userAchievement = new UserAchievement([
                         'user_id' => $user->id,
-                        'achievement_id' => 4,
+                        'achievement_id' => 1,
                         // Otros campos relacionados con los logros
                     ]);
                     $userAchievement->save();

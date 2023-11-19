@@ -22,6 +22,7 @@ class AchievementController extends Controller
         $data = $request->validated();
     // Crear la instancia de Achievement
     $achievement = new Achievement([
+        'id' => $data['id'],
         'name' => $data['name'],
         'description' => $data['description'],
     ]);
@@ -86,7 +87,5 @@ class AchievementController extends Controller
     
         return response()->json(['message' => 'El usuario ya tiene el logro'], 200);
     }
-    
-    
 }
 ?>
