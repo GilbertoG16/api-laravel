@@ -105,10 +105,9 @@ public function login(Request $request) {
     
         $token = app('auth.password.broker')->createToken($user);
     
-        
-        $resetLink = "Haz clic en el siguiente enlace para restablecer tu contraseña:\n\nhttp://tu-aplicacion.com/reset-password/$user->id/$token";
+        $frontendUrl = config('app.url');
 
-    
+        $resetLink = "{$frontendUrl}/reset-password/{$user->id}/{$token}";
         // Envía el correo electrónico directamente sin usar la clase Mailable
         Mail::to($user->email)->send(new ResetPasswordMail($resetLink));
     
