@@ -33,7 +33,6 @@ class QrAssociationController extends Controller
                     'location_id' => $qrAssociationData['location_id'],
                     'learning_info_id' => $learningInfo->id,
                 ]);
-
             } else {
               
             }
@@ -80,6 +79,7 @@ class QrAssociationController extends Controller
             }
         }
     }
+    
     
 
 }

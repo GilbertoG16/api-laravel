@@ -9,11 +9,11 @@ class Achievement extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name','description','photo_url'];
+    protected $fillable = ['id','name','description','photo_url'];
 
     public function users()
     {
-        return $this->belongsToMany(User::class, 'user_achievement')
+        return $this->belongsToMany(User::class, 'user_achievements')
             ->withPivot('unlocked_at')
             ->withTimestamps();
     }

@@ -28,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('user_achievements');
+        Schema::dropIfExists('user_achievement');
     }
 };
