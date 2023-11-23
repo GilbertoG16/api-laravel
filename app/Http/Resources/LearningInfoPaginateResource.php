@@ -18,6 +18,7 @@ class LearningInfoPaginateResource extends JsonResource
         $firstImage = $this->images->first();
         return [
             'id'=>$this->id,
+            'name'=>$this->name,
             'description'=>$this->description,
             'image_url' => $firstImage ? $firstImage->image_url : null,
         ];

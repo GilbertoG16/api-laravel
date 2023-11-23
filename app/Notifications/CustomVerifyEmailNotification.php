@@ -31,14 +31,15 @@ class CustomVerifyEmailNotification extends VerifyEmail
      * @return string
      */
     protected function verificationUrl($notifiable)
-{
-    // Personaliza la URL base para redirigir a tu aplicación React
-    $frontendUrl = 'http://localhost:3000';
-
-    // Construye manualmente la URL de verificación
-    $url = $frontendUrl . '/verify/' . $notifiable->getKey() . '/' . sha1($notifiable->getEmailForVerification());
-
-    return $url;
-}
+    {
+        // Obtiene la URL base definida en el archivo .env
+        $frontendUrl = config('app.url');
+        
+        // Construye manualmente la URL de verificación
+        $url = $frontendUrl . '/verify/' . $notifiable->getKey() . '/' . sha1($notifiable->getEmailForVerification());
+    
+        return $url;
+    }
+    
 
 }
