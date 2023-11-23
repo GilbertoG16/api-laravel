@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\AchievementRule;
-use App\Models\Achievement;
 use Illuminate\Http\Request;
 use App\Models\UserQrHistory;
 use App\Models\User;
+use App\Models\AchievementRule;
+use App\Models\Achievement;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 class UserQrHistoryController extends Controller
@@ -80,32 +80,6 @@ class UserQrHistoryController extends Controller
 
         return response()->json($formattedHistory);
     }
-    
-public function checkAndAssignAchievement( $qr_identifier)
-{
-    $user = auth()->user(); 
-    // Recupera las reglas de logro que contienen la condición SQL
-    $achievementRules = AchievementRule::all();
-
-    foreach ($achievementRules as $rule) {
-        // Reemplaza ? en la consulta SQL con valores reales
-        $sqlCondition = str_replace('?', $$user->id, $rule->sql_condition);
-        $sqlCondition = str_replace('?', $qr_identifier, $sqlCondition);
-
-        // Ejecuta la consulta SQL
-        $result = DB::select(DB::raw($sqlCondition));
-
-        if (count($result) === 1 && (int)$result[0]->count === 1) {
-            // Si la condición se cumple, asigna el logro al usuario
-            $user = User::find($user->id);
-            $achievement = Achievement::find($rule->achievement_id);
-
-            if ($user && $achievement) {
-                // Asigna el logro al usuario
-                $user->achievements()->syncWithoutDetaching([$achievement->id]);
-            }
-        }
-    }
-}
+ 
          
 }

@@ -1,11 +1,8 @@
 <?php
-
 namespace App\Http\Requests\Achievement;
-
 use App\Models\Image;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Arr;
-
 class AchievementRequest extends FormRequest
 {
     /**
@@ -15,7 +12,6 @@ class AchievementRequest extends FormRequest
     {
         return true;
     }
-
     /**
      * Get the validation rules that apply to the request.
      *
@@ -24,9 +20,11 @@ class AchievementRequest extends FormRequest
     public function rules()
     {
         return [
+            'id' => 'required|integer',
             'name' => 'required|string',
             'description' => 'required|string',
             'image' => 'required|image|mimes:jpeg,png',
         ];
     }
 }
+?>
