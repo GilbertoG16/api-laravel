@@ -10,6 +10,7 @@ use App\Http\Resources\LearningInfoResourceOne;
 use App\Http\Resources\UniversitySiteResource;  
 use App\Http\Resources\LearningInfoPaginateResource;  
 use App\Models\LearningInfo;
+use App\Models\Trivia;
 use App\Models\Location;
 use App\Models\QrInfoAssociation;
 use App\Models\UserQrHistory;
@@ -226,7 +227,16 @@ class LearningInfoController extends Controller
 
         // Obtener todas las asociaciones de QrInfoAssociation
          $qrInfoAssociations = $learningInfo->qrInfoAssociations;
-            
+        
+         // Obtener la trivia 
+         $trivia = Trivia::where('learning_info_id', $id)->first();
+         
+         if($trivia) {
+            $trivia->delete();
+        }
+
+        // Llamamos al método delete (Debería de eliminarse en cascada con el ELOQUENT)
+        
          // Eliminar en cascada todas las relaciones asociadas a QrInfoAssociation
          foreach ($qrInfoAssociations as $association) {
              $association->userQrHistories()->delete();
@@ -238,7 +248,7 @@ class LearningInfoController extends Controller
          $learningInfo->images()->delete();
          $learningInfo->text_audios()->delete();
          $learningInfo->events()->delete();
-         $learningInfo->trivias()->delete();
+         
 
          // Luego, eliminar el LearningInfo principal
          $learningInfo->delete();
