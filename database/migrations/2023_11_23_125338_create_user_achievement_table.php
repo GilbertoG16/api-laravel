@@ -11,14 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('achievement_rules', function (Blueprint $table) {
+        Schema::create('user_achievements', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('user_id');
             $table->unsignedBigInteger('achievement_id');
-            $table->foreign('achievement_id')->references('id')->on('achievements');
-            $table->string('name');
-            $table->text('description');
-            $table->text('sql_condition');
+
             $table->timestamps();
+
+            $table->foreign('user_id')->references('id')->on('users');
+            $table->foreign('achievement_id')->references('id')->on('achievements');
         });
     }
 
@@ -27,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('achievement_rules');
+        Schema::dropIfExists('user_achievements');
     }
 };

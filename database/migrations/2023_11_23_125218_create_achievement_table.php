@@ -16,6 +16,9 @@ return new class extends Migration
             $table->string('name');
             $table->text('description');
             $table->string('photo_url', 2048)->nullable();
+            $table->unsignedBigInteger('achievement_type_id');
+            $table->foreign('achievement_type_id')->references('id')->on('achievement_types');
+            $table->unsignedBigInteger('id_asociacion');
             $table->timestamps();
         });
     }
@@ -25,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('achievements');
+        Schema::dropIfExists('achievement');
     }
 };

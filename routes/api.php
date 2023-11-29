@@ -87,6 +87,12 @@ Route::middleware('auth:sanctum','verified', 'role:admin', 'status' )->group(fun
     Route::delete('/admin/locations/{id}', [LocationController::class, 'destroy']);
 
     Route::post('/achievement', [AchievementController::class, 'create']);
+    Route::get('/achievement', [AchievementController::class, 'index']);
+    Route::get('/edit-achievement/{id}', [AchievementController::class, 'getAchievementById']);
+    Route::get('/getAchievementsType', [AchievementController::class, 'getAchievementsType']);
+    Route::get('/getAchievementAssociation', [AchievementController::class, 'getAchievementAssociation']);
+    Route::put('/achievement/{id}', [AchievementController::class, 'update']);
+    Route::delete('/achievement/{id}', [AchievementController::class, 'destroy']);
     Route::post('/achievementRules', [AchievementRulesController::class, 'create']);
     Route::post('/assignAchievement', [AchievementController::class, 'assignAchievementToUser']);
 

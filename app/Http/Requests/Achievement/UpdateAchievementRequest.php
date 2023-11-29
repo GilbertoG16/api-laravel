@@ -1,9 +1,10 @@
 <?php
+
 namespace App\Http\Requests\Achievement;
-use App\Models\Image;
+
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Arr;
-class AchievementRequest extends FormRequest
+
+class UpdateAchievementRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -12,20 +13,21 @@ class AchievementRequest extends FormRequest
     {
         return true;
     }
+
     /**
      * Get the validation rules that apply to the request.
      *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
-    public function rules()
+    public function rules(): array
     {
+        
         return [
-            'name' => 'required|string',
+            'name' => 'sometimes|string|max:255',
             'description' => 'required|string',
-            'photo_url.*' => 'required|file|mimes:jpeg,png',
-            'achievement_type_id' => 'required|integer',
-            'id_asociacion' => 'required|integer',
+            'image' => 'sometimes|required|image|mimes:jpeg,png',
+            'achievement_type_id' => 'sometimes|required|integer',
+            'id_asociacion' => 'sometimes|required|integer',
         ];
     }
 }
-?>

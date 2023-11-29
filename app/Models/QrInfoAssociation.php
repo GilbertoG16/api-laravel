@@ -31,4 +31,8 @@ class QrInfoAssociation extends Model
     {
         return $this->hasMany(UserQrHistory::class);
     }
+    public function achievements()
+    {
+        return $this->hasMany(Achievement::class, 'id_asociacion');
+    }
 }
