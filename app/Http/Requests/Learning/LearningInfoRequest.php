@@ -22,13 +22,13 @@ class LearningInfoRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required|string',
-            'description' => 'required|string',
+            'name' => 'required|string|max:255',
+            'description' => 'required|string|max:1000',
             'category_id' => 'required|integer|exists:categories,id',
             'images.*' => 'required|file|mimes:jpeg,png', 
             'video' => 'nullable|file|mimes:mp4',
             'text_audios' => 'required|array', 
-            'text_audios.*.text' => 'required|string', 
+            'text_audios.*.text' => 'required|string|max:1000', 
             'text_audios.*.audio' => 'nullable|file|mimes:mp3,wav', 
             'qr_associations' => 'required|array',
             'qr_associations.*.latitude' => 'required|numeric',
