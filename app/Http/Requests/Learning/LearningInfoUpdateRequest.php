@@ -24,15 +24,15 @@ class LearningInfoUpdateRequest extends FormRequest
         $learningInfoId = $this->route('id');
 
         return [
-            'name' => 'sometimes|required|string',
-            'description' => 'sometimes|required|string',
+            'name' => 'sometimes|required||max:255',
+            'description' => 'sometimes|required|string|max:1000',
             'category_id' => 'sometimes|required|integer|exists:categories,id',
             'images.*.id' => "sometimes|integer|exists:images,id,learning_info_id,{$learningInfoId}",
             'images.*.image' => 'sometimes|file|mimes:jpeg,png',
             'video' => 'sometimes|file|mimes:mp4',
             'text_audios' => 'sometimes|required|array',
             'text_audios.*.id' => "sometimes|integer|exists:text_audios,id,learning_info_id,{$learningInfoId}",
-            'text_audios.*.text' => 'sometimes|required|string',
+            'text_audios.*.text' => 'sometimes|required|string|max:1000',
             'text_audios.*.audio' => 'sometimes|file|mimes:mp3,wav',
             'qr_associations' => 'sometimes|required|array',
             'qr_associations.*.qr_identifier' => "sometimes|required|string|exists:qr_info_associations,qr_identifier,learning_info_id,{$learningInfoId}",

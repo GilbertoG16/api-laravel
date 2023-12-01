@@ -25,7 +25,7 @@ class LearningEventRequest extends FormRequest
      public function rules()
      {
          return [
-             'name' => 'required|string',
+             'name' => 'required|string|max:255',
              'description' => 'required|string',
              'start_event' => 'required|date_format:Y-m-d H:i:s',
              'end_event' => 'required|date_format:Y-m-d H:i:s|after:start_datetime',

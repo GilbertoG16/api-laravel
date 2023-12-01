@@ -366,7 +366,7 @@ class TriviaController extends Controller
         $triviaId = $request->query('trivia_id');
     
         // Construye la consulta base
-        $query = Score::query();
+        $query = Score::query()->orderBy('score', 'desc');
     
         // Si se proporciona un ID de trivia, aplica el filtro
         if ($triviaId) {
@@ -378,17 +378,24 @@ class TriviaController extends Controller
     
         // Respuesta JSON formateada
         $formattedScores = $scores->map(function ($score) {
-            $userName = optional($score->user->profile)->name;
+            $userProfile = optional($score->user->profile);
+            $userName = $userProfile->name ?? null;
+            $userLastName = $userProfile->last_name ?? null;
+            $userProfilePicture = $userProfile->profile_picture ?? null;
+            
             $userEmail = $score->user->email;
             $scoreValue = $score->score;
             $triviaName = $score->trivia->name;
-    
+            
             return [
                 'user_name' => $userName,
+                'user_lastname'=> $userLastName,
+                'profile_picture' => $userProfilePicture,
                 'user_email' => $userEmail,
                 'score' => $scoreValue,
                 'trivia_name' => $triviaName,
             ];
+            
         });
     
         return response()->json(['scores' => $formattedScores]);
