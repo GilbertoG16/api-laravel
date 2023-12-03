@@ -22,8 +22,8 @@ class LocationUpdate extends FormRequest
     public function rules(): array
     {
         return [
-            'name'=>'sometimes|string',
-            'description'=> 'sometimes|string',
+            'name'=>'sometimes|string|max:255',
+            'description'=> 'sometimes|string|max:1000',
         ];
     }
 }

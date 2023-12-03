@@ -24,7 +24,7 @@ class LearningInfoUpdateRequest extends FormRequest
         $learningInfoId = $this->route('id');
 
         return [
-            'name' => 'sometimes|required|string',
+            'name' => 'sometimes|required||max:255',
             'description' => 'sometimes|required|string',
             'category_id' => 'sometimes|required|integer|exists:categories,id',
             'images.*.id' => "sometimes|integer|exists:images,id,learning_info_id,{$learningInfoId}",
