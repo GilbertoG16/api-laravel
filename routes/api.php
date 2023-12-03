@@ -91,7 +91,7 @@ Route::middleware('auth:sanctum','verified', 'role:admin', 'status' )->group(fun
     Route::get('/edit-achievement/{id}', [AchievementController::class, 'getAchievementById']);
     Route::get('/getAchievementsType', [AchievementController::class, 'getAchievementsType']);
     Route::get('/getAchievementAssociation', [AchievementController::class, 'getAchievementAssociation']);
-    Route::put('/achievement/{id}', [AchievementController::class, 'update']);
+    Route::post('/achievement/{id}', [AchievementController::class, 'updateAchievement']);
     Route::delete('/achievement/{id}', [AchievementController::class, 'destroy']);
     Route::post('/achievementRules', [AchievementRulesController::class, 'create']);
     Route::post('/assignAchievement', [AchievementController::class, 'assignAchievementToUser']);

@@ -24,10 +24,10 @@ class UpdateAchievementRequest extends FormRequest
         
         return [
             'name' => 'sometimes|string|max:255',
-            'description' => 'required|string',
-            'image' => 'sometimes|required|image|mimes:jpeg,png',
-            'achievement_type_id' => 'sometimes|required|integer',
-            'id_asociacion' => 'sometimes|required|integer',
+            'description' => 'sometimes|string',
+            'photo_url.*' => 'sometimes|file|mimes:jpeg,png',
+            'achievement_type_id' => 'sometimes|integer',
+            'id_asociacion' => 'sometimes|integer',
         ];
     }
 }
