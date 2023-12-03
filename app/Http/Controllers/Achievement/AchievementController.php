@@ -11,7 +11,6 @@ use App\Models\UserAchievement;
 use App\Models\Achievement_Type;
 use App\Http\Requests\Achievement\AchievementRequest;
 use App\Http\Requests\Achievement\UpdateAchievementRequest;
-use Illuminate\Support\Facades\Log;
 use App\Models\QrInfoAssociation;
 use App\Models\Trivia;
 use App\Models\Achievement;
@@ -117,7 +116,7 @@ class AchievementController extends Controller
 
         return response()->json(['message' => 'El usuario ya tiene el logro'], 200);
     }
-    public function updateAchievement(UpdateAchievementRequest $request, $id)
+    public function update(UpdateAchievementRequest $request, $id)
     {
         $data = $request->validated();
 
