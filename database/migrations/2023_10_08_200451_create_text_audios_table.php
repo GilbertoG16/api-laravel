@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('text_audios', function (Blueprint $table) {
             $table->id();
             $table->foreignId('learning_info_id')->constrained();
-            $table->string('text',1000);
+            $table->longText('text');
           
             $table->string('audio_url',2048)->nullable();
             $table->timestamps();
