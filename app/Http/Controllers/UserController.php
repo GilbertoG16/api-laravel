@@ -8,21 +8,28 @@ use App\Models\Profile;
 use Illuminate\Http\Request;
 use App\Http\Requests\PhotoUpload; 
 use App\Http\Requests\UpdateProfile; 
+use App\Models\Achievement;
+use Illuminate\Support\Facades\Log; 
 use App\Models\QrInfoAssociation;
 use App\Models\UserQrHistory;
 use App\Http\Controllers\Achievement\AchievementController;
+use Kreait\Firebase\Messaging\CloudMessage;
+use Kreait\Laravel\Firebase\Facades\Firebase;
 use App\Services\FirebaseStorageService;
 use App\Http\Controllers\Achievement\AchievementRulesController;
 use App\Models\UserAchievement;
 class UserController extends Controller
 {
-
+    protected $notification;
     protected $firebaseStorageService;
     protected $achievementController;
-    public function __construct(FirebaseStorageService $firebaseStorageService, AchievementController $achievementController)
+    protected $fcmTokenController;
+    public function __construct(FirebaseStorageService $firebaseStorageService, AchievementController $achievementController, FcmTokenController $fcmTokenController)
     {
+        $this->notification = Firebase::messaging();
         $this->firebaseStorageService = $firebaseStorageService;
         $this->achievementController = $achievementController;
+        $this->fcmTokenController = $fcmTokenController;
     }
 
     public function index(){
@@ -93,7 +100,7 @@ class UserController extends Controller
         try {
             // Obtener el usuario
             $user = User::findOrFail($userId);
-            
+            Log::info('Entre aqui.'); 
             //Obtener si ha escaneado el codigo anterioramnete
             $previouslyScanned = UserQrHistory::where('user_id', $user)
             ->where('qr_info_association_id', $qrAssociation->id)
@@ -102,23 +109,54 @@ class UserController extends Controller
             $userQrHistory = new UserQrHistory([
                 'qr_info_association_id' => $qrAssociation->id,
             ]);
-
+            $achievement = Achievement::where('achievement_type_id', 2)
+            ->where('id_asociacion', $qrAssociation->learningInfo)
+            ->first();
+            Log::info('Pase achievement.'); 
             //Si no ha escaneado se le asigna el logro
-            if (!$previouslyScanned) {
+            if (!$previouslyScanned)     {
+                Log::info('Pase el previoues escaneado'); 
                 // El usuario no ha escaneado este QR anteriormente, asignar el logro
-                
-                $this->achievementController->assignAchievement($user, 2);
+                $this->achievementController->assignAchievement($user, $achievement->id);
+                $user = User::find($userId);
+                $fcmTokens = $user->fcmTokens;
+            
+                if ($fcmTokens->isNotEmpty()) {
+                    // Enviar la notificación
+                    foreach ($fcmTokens as $fcmToken) {
+                        $this->sendNotification($fcmToken->token, "Has escaneado este qr por primera vez");
+                    }
+                }
                 
             }
             $user->userQrHistories()->save($userQrHistory);
             
             return response()->json(['message' => 'Usuario relacionado con la asociación de QR exitosamente 😎'], 200);
         } catch (\Throwable $th) {
+            Log::info('Error'); 
             return response()->json([
                 'success' => false,
                 'message' => 'Error al relacionar el usuario con la asociación de QR: ' . $th->getMessage(),
             ]);
         }
+    }
+    public function sendNotification($Fcmtoken, $body)
+    {
+        //Este es un ejemplo, aquí en realidad tienes que tomar el token del dispositivo alojado en la nueva tabla creada 
+        //fcm_token, aparte hacemos una instancia de Firebase en el constructor
+        
+        $title = "Felicidades has obtenido un logro";
+        
+        $message = CloudMessage::fromArray([
+            'token' => $Fcmtoken,
+            'notification'=> [
+                'title' => $title,
+                'body'=> $body,
+            ],
+        ]);
+
+        $this->notification->send($message);
+        return response()->json(['message' => 'Notificación enviada con éxito']);
     }
 
     public function userProfile(Request $request) {

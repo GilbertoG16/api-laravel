@@ -39,5 +39,8 @@ class Trivia extends Model
     
         parent::delete();
     }
-    
+    public function achievements()
+    {
+        return $this->hasMany(Achievement::class, 'id_asociacion');
+    }  
 }

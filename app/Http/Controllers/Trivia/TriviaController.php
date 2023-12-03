@@ -5,9 +5,11 @@ namespace App\Http\Controllers\Trivia;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\FileUploadController;
 use App\Http\Controllers\AchievementController;
+use App\Http\Controllers\FcmTokenController;
 use App\Http\Requests\Trivia\CreateTriviaRequest;
 use App\Http\Requests\Trivia\UpdateTriviaRequest;
 use App\Http\Requests\SubmitAnswersRequest;
+use App\Models\User;
 use App\Models\Answer;
 use App\Models\ImageQuestion;
 use App\Models\Question;
@@ -25,12 +27,12 @@ use Illuminate\Http\Request;
 class TriviaController extends Controller
 {
     protected $firebaseStorageService;
-
-    public function __construct(FirebaseStorageService $firebaseStorageService)
+    protected $fcmTokenController;
+    public function __construct(FirebaseStorageService $firebaseStorageService, FcmTokenController $fcmTokenController)
     {
         $this->firebaseStorageService = $firebaseStorageService;
+        $this->fcmTokenController = $fcmTokenController;
     }
-
 
     public function createTrivia(CreateTriviaRequest $request)
     {
@@ -257,10 +259,13 @@ class TriviaController extends Controller
     {
         $user = auth()->user();
         $data = $request->all();
-    
+        $triviaId = $data['trivia_id'];
         // Calcula el puntaje (5 puntos por respuesta correcta)
         $score = 0;
         $maxScore = 25; 
+        $achievement = Achievement::where('achievement_type_id', 1)
+            ->where('id_asociacion', $triviaId)
+            ->first();
         // Asume que las respuestas están en $data['answers']
         foreach ($data['answers'] as $answer) {
             $answerModel = Answer::find($answer['answer_id']);
@@ -304,16 +309,27 @@ class TriviaController extends Controller
             
                 // Verifica si el usuario ya tiene este logro
                 $existingUserAchievement = UserAchievement::where('user_id', $user->id)
-                    ->where('achievement_id', 1)
+                    ->whereHas('achievement', function ($query) use ($triviaId) {
+                        $query->where('id_asociacion', $triviaId);
+                    })
                     ->first();
     
                 if (!$existingUserAchievement) {
                     // El usuario no tiene el logro, asígnalo
                     $userAchievement = new UserAchievement([
                         'user_id' => $user->id,
-                        'achievement_id' => 1,
+                        'achievement_id' => $achievement->id,
                         // Otros campos relacionados con los logros
                     ]);
+                    $user = User::find($user->id);
+                    $fcmTokens = $user->fcmTokens;
+                
+                    if ($fcmTokens->isNotEmpty()) {
+                        // Enviar la notificación
+                        foreach ($fcmTokens as $fcmToken) {
+                            $this->sendNotification($fcmToken->token, "Has escaneado este qr por primera vez");
+                        }
+                    }
                     $userAchievement->save();
                     return response()->json(['message' => 'Se le asignó el logro.'], 200);
                     // Si deseas, podrías retornar una respuesta JSON indicando que se asignó el logro al usuario
