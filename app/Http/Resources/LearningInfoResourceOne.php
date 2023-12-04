@@ -20,6 +20,7 @@ class LearningInfoResourceOne extends JsonResource
             'images' => $this->images
                 ? $this->images->map(function ($image) {
                     return [
+                        'image_id'=> $image->id,
                         'image_url' => $image->image_url,
                     ];
                 })
@@ -32,6 +33,7 @@ class LearningInfoResourceOne extends JsonResource
             'text_audios' => $this->text_audios
                 ? $this->text_audios->map(function ($audio) {
                     return [
+                        'audios_id'=> $audio->id, 
                         'audio_url' => $audio->audio_url,
                         'text' => $audio->text,
                     ];
