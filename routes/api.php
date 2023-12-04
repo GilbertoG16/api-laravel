@@ -49,6 +49,7 @@ Route::get('/all-learnings-with-images', [LocationController::class, 'getAllLear
 Route::get('/university-sites', [LearningInfoController::class, 'universitySites']);
 Route::get('/get-images', [LearningInfoController::class, 'getImages']);
 Route::middleware('auth:sanctum', 'verified', 'status')->group(function () {
+    Route::post('/user/changePass',[AuthController::class, 'changePassword']);
     Route::post('/store-fcm-token', [FcmTokenController::class, 'storeFcmToken']);
     Route::get('/profile', [UserController::class, 'userProfile']);
     Route::get('/UserAchivement',[UserController::class, 'getUserAchievements']);

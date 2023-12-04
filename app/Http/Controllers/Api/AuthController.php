@@ -149,6 +149,25 @@ public function login(Request $request) {
         return response()->json(['message' => 'Contraseña restablecida con éxito']);
     }
     
-    
-        
+    public function changePassword(Request $request) { 
+        // Usamos sactum para tomar al usuario 
+        $user = auth()->user();
+
+        // Validar las reglas de validación para las contraseñas 
+        $request->validate([
+            'old_password'=> 'required',
+            'password'=> 'required|confirmed|min:6'
+        ]);
+
+        // Verificamos si la contraseña anterior coincide
+        if(!Hash::check($request->old_password, $user->password)) {
+            return response()->json(['error'=>'La contraseña anterior es incorrecta',400]);
+        }
+
+        // Restablecer la contraseña con hash
+        $user->password = Hash::make($request->password);
+        $user->save();
+
+        return response()->json(['message'=>'Contraseña restablecida con éxito']);
+    }
 }
