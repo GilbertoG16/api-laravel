@@ -43,17 +43,13 @@ class AuthController extends Controller
     // Creamos el perfil del usuario 
     Profile::create(['user_id'=>$user->id]);
 
-    
-    $token = $user->createToken('token')->plainTextToken;
-
-    $cookie = cookie('jwt', $token, 60 * 24);
-
-
     $user->notify(new CustomVerifyEmailNotification);
     return response()->json([
+        'title'=>'Usuario registrado exitosamente!',
+        'message'=>'Se ha enviado a tu correo electrónico un correo de confirmación.😎👍',
         'user'=> new UserResource($user),
-    ])->withCookie($cookie);
-}
+    ]);
+    }
 
 public function login(Request $request) {
     // Decirle a la request que solo acepte email y password para autenticación
