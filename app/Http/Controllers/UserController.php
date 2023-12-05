@@ -118,22 +118,16 @@ class UserController extends Controller
             Log::info('Pase achievement.');
             //Si no ha escaneado se le asigna el logro
             if (!$previouslyScanned) {
-                $existingAchievement = UserAchievement::where('user_id', $user->id)
-                    ->whereHas('achievement', function ($query) use ($qrAssociation) {
-                        $query->where('id_asociacion', $qrAssociation->learningInfo);
-                    })
-                    ->exists();
-                if (!$existingAchievement) {
-                    // El usuario no ha escaneado este QR anteriormente, asignar el logro
-                    $this->achievementController->assignAchievement($user, $achievement->id);
-                    $user = User::find($userId);
-                    $fcmTokens = $user->fcmTokens;
+                Log::info('Pase el previoues escaneado');
+                // El usuario no ha escaneado este QR anteriormente, asignar el logro
+                $this->achievementController->assignAchievement($user, $achievement->id);
+                $user = User::find($userId);
+                $fcmTokens = $user->fcmTokens;
 
-                    if ($fcmTokens->isNotEmpty()) {
-                        // Enviar la notificación
-                        foreach ($fcmTokens as $fcmToken) {
-                            $this->sendNotification($fcmToken->token, "Has escaneado este qr por primera vez");
-                        }
+                if ($fcmTokens->isNotEmpty()) {
+                    // Enviar la notificación
+                    foreach ($fcmTokens as $fcmToken) {
+                        $this->sendNotification($fcmToken->token, "Has escaneado este qr por primera vez");
                     }
                 }
             }
