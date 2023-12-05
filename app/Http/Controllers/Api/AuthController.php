@@ -45,6 +45,8 @@ class AuthController extends Controller
 
     $user->notify(new CustomVerifyEmailNotification);
     return response()->json([
+        'title'=>'Usuario registrado exitosamente!',
+        'message'=>'Se ha enviado a tu correo electrónico un correo de confirmación.😎👍',
         'user'=> new UserResource($user),
     ]);
     }
